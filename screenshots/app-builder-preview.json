@@ -1,0 +1,36 @@
+{
+  "url": "http://127.0.0.1:8080/",
+  "viewports": {
+    "desktop": {
+      "width": 1280,
+      "height": 800,
+      "status": 200,
+      "title": "Velas Ana",
+      "hasCanvas": false,
+      "bodyTextLen": 1825,
+      "bodyTextHash": "719cb4f57a612bdf2a65a5978541a4b4a52c5ca9bd8a56a29ded92e13fc1be7a",
+      "bodyTextPrefix": "Velas Ana Inicio Catálogo Cómo comprar La casa COLECCIÓN ARTESAN",
+      "horizontalOverflow": false,
+      "consoleErrors": [],
+      "pageErrors": [],
+      "screenshot": "/workspace/screenshots/app-builder-preview.png"
+    },
+    "mobile": {
+      "width": 390,
+      "height": 844,
+      "status": 200,
+      "title": "Velas Ana",
+      "hasCanvas": false,
+      "bodyTextLen": 1788,
+      "bodyTextHash": "499f17cd3fdf68c3c8d7f0cb8972a70aeb6ec1bfb9f9cb40dc730770e4074f52",
+      "bodyTextPrefix": "Velas Ana COLECCIÓN ARTESANAL Velas que se recuerdan Rosas escul",
+      "horizontalOverflow": false,
+      "consoleErrors": [],
+      "pageErrors": [],
+      "screenshot": "/workspace/screenshots/app-builder-preview-mobile.png"
+    }
+  },
+  "brandWarnings": [],
+  "authWarnings": [],
+  "verdictFile": "/workspace/screenshots/app-builder-preview.json"
+}
