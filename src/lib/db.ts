@@ -8,24 +8,11 @@ const rawDatabaseUrl =
 const databaseUrl =
   rawDatabaseUrl && rawDatabaseUrl.trim() ? rawDatabaseUrl : undefined;
 
-const isServerless = !!(
-  typeof process !== "undefined" &&
-  (process.env.VERCEL || process.env.AWS_LAMBDA_FUNCTION_NAME)
-);
-
-const isProd =
-  typeof process !== "undefined" && process.env.NODE_ENV === "production";
-
 /**
- * - Con DATABASE_URL → Neon
- * - En local (dev) sin DATABASE_URL → PGLite
- * - En Vercel/producción sin DATABASE_URL → no usar SQL (la tienda usa Firebase)
+ * Neon si hay DATABASE_URL (Vercel).
+ * PGLite solo en desarrollo local sin DATABASE_URL.
  */
-export const dbSource: DbSource = databaseUrl
-  ? "neon"
-  : isServerless || isProd
-    ? "neon"
-    : "pglite";
+export const dbSource: DbSource = databaseUrl ? "neon" : "pglite";
 
 export interface Sql {
   <T = Record<string, unknown>>(
@@ -90,10 +77,10 @@ function createNeonSql(): Promise<Sql> {
 }
 
 async function createPgliteSql(): Promise<Sql> {
-  // Nunca en Vercel / producción
-  if (isServerless || isProd) {
+  // Solo desarrollo local
+  if (typeof process !== "undefined" && process.env.VERCEL) {
     throw new Error(
-      "PGLite deshabilitado en producción. La tienda usa solo Firebase.",
+      "PGLite no disponible en Vercel. Configura DATABASE_URL (Neon).",
     );
   }
 
@@ -163,14 +150,6 @@ async function createSql(): Promise<Sql> {
         "or a server route loader, never from client code.",
     );
   }
-
-  // Producción / Vercel sin DATABASE_URL → no usar SQL
-  if (!databaseUrl && (isServerless || isProd)) {
-    throw new Error(
-      "SQL db deshabilitada en producción. Usa Firebase (Firestore) para la tienda.",
-    );
-  }
-
   return dbSource === "neon" ? createNeonSql() : createPgliteSql();
 }
 
@@ -185,12 +164,9 @@ export function getSql(): Promise<Sql> {
 export async function getPglite(): Promise<
   import("@electric-sql/pglite").PGlite
 > {
-  if (isServerless || isProd) {
-    throw new Error("PGLite no disponible en producción (solo Firebase)");
-  }
   if (dbSource !== "pglite") {
     throw new Error(
-      "getPglite() is only available on the PGLite fallback (no DATABASE_URL)",
+      "getPglite() solo está disponible sin DATABASE_URL (modo local)",
     );
   }
   await getSql();
@@ -200,15 +176,24 @@ export async function getPglite(): Promise<
 }
 
 export function ensureDbReady(): Promise<void> {
-  // Nunca bootstrap en Vercel / producción
-  if (!databaseUrl && (isServerless || isProd)) {
-    return Promise.resolve();
-  }
   if (dbSource !== "pglite") return Promise.resolve();
   return getSql()
     .then(() => undefined)
     .catch(() => undefined);
 }
 
-// Sin bootstrap automático de PGLite.
-// La tienda usa solo Firebase.
+// Bootstrap PGLite solo en local (no en Vercel)
+const globalBoot = globalThis as typeof globalThis & {
+  __pgBootstrapPromise__?: Promise<void>;
+};
+
+if (
+  typeof window === "undefined" &&
+  dbSource === "pglite" &&
+  !process.env.VERCEL
+) {
+  globalBoot.__pgBootstrapPromise__ ??= ensureDbReady().catch((err) => {
+    globalBoot.__pgBootstrapPromise__ = undefined;
+    console.error("[db] PGLite bootstrap failed:", err);
+  });
+}
