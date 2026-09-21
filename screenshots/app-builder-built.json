@@ -1,0 +1,38 @@
+{
+  "url": "http://127.0.0.1:8081/",
+  "viewports": {
+    "desktop": {
+      "width": 1280,
+      "height": 800,
+      "status": 200,
+      "title": "Velas Ana",
+      "hasCanvas": false,
+      "bodyTextLen": 1805,
+      "bodyTextHash": "13b69599615a5beeae0716ae08ff5154938748710095fdf223b49b2b535ae8d0",
+      "bodyTextPrefix": "Inicio Catálogo Cómo comprar La casa COLECCIÓN ARTESANAL Velas q",
+      "horizontalOverflow": false,
+      "consoleErrors": [],
+      "pageErrors": [],
+      "screenshot": "/workspace/screenshots/app-builder-built.png"
+    },
+    "mobile": {
+      "width": 390,
+      "height": 844,
+      "status": 200,
+      "title": "Velas Ana",
+      "hasCanvas": false,
+      "bodyTextLen": 1768,
+      "bodyTextHash": "995a461ee6923d8dcf37d3b533c332aac42055d8c669b9883aaa13b3f9d62960",
+      "bodyTextPrefix": "COLECCIÓN ARTESANAL Velas que se recuerdan Rosas esculpidas, fra",
+      "horizontalOverflow": false,
+      "consoleErrors": [],
+      "pageErrors": [],
+      "screenshot": "/workspace/screenshots/app-builder-built-mobile.png"
+    }
+  },
+  "brandWarnings": [],
+  "authWarnings": [],
+  "verdictFile": "/workspace/screenshots/app-builder-built.json",
+  "divergesFromBaseline": false,
+  "baselineReasons": []
+}

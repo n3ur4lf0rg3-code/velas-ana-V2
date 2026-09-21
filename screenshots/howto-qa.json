@@ -1,0 +1,36 @@
+{
+  "url": "http://127.0.0.1:8080/como-comprar",
+  "viewports": {
+    "desktop": {
+      "width": 1280,
+      "height": 800,
+      "status": 200,
+      "title": "Velas Ana",
+      "hasCanvas": false,
+      "bodyTextLen": 1622,
+      "bodyTextHash": "c661574f13aebda4ed68a7d3e46197af59d56d2d841dfc852860de0f3c35d9f9",
+      "bodyTextPrefix": "Velas Ana Inicio Catálogo Cómo comprar La casa EL RITO Cómo comp",
+      "horizontalOverflow": false,
+      "consoleErrors": [],
+      "pageErrors": [],
+      "screenshot": "/workspace/screenshots/howto-qa.png"
+    },
+    "mobile": {
+      "width": 390,
+      "height": 844,
+      "status": 200,
+      "title": "Velas Ana",
+      "hasCanvas": false,
+      "bodyTextLen": 1585,
+      "bodyTextHash": "378bfa39d5525b90c35f42d0a17baab5f77dbb0c1e913f75fe022ef6e06ee818",
+      "bodyTextPrefix": "Velas Ana EL RITO Cómo comprar Velas Ana trabaja por pedido y tr",
+      "horizontalOverflow": false,
+      "consoleErrors": [],
+      "pageErrors": [],
+      "screenshot": "/workspace/screenshots/howto-qa-mobile.png"
+    }
+  },
+  "brandWarnings": [],
+  "authWarnings": [],
+  "verdictFile": "/workspace/screenshots/howto-qa.json"
+}

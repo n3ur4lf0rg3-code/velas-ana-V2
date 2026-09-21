@@ -1,0 +1,1 @@
+var e=`velas-ana-orders`;function t(){if(typeof window>`u`)return[];try{let t=window.localStorage.getItem(e);if(!t)return[];let n=JSON.parse(t);return Array.isArray(n)?n:[]}catch{return[]}}function n(e){return t().find(t=>t.id===e)}function r(n){let r=t().filter(e=>e.id!==n.id);r.unshift(n),window.localStorage.setItem(e,JSON.stringify(r))}export{r as n,n as t};

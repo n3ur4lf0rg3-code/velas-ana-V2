@@ -1,0 +1,36 @@
+{
+  "url": "http://127.0.0.1:8080/catalogo",
+  "viewports": {
+    "desktop": {
+      "width": 1280,
+      "height": 800,
+      "status": 200,
+      "title": "Velas Ana",
+      "hasCanvas": false,
+      "bodyTextLen": 1346,
+      "bodyTextHash": "66c4d7059d1efcb72bb53b591016d7aae1ffc5e590b7d931e85c66c1fc2f89a6",
+      "bodyTextPrefix": "Velas Ana Inicio Catálogo Cómo comprar La casa COLECCIÓN El catá",
+      "horizontalOverflow": false,
+      "consoleErrors": [],
+      "pageErrors": [],
+      "screenshot": "/workspace/screenshots/catalog-qa.png"
+    },
+    "mobile": {
+      "width": 390,
+      "height": 844,
+      "status": 200,
+      "title": "Velas Ana",
+      "hasCanvas": false,
+      "bodyTextLen": 1309,
+      "bodyTextHash": "9ff98f16e62a9a129cabca1f22de7bf5839ca00d5abd53ae24dea6321910a90e",
+      "bodyTextPrefix": "Velas Ana COLECCIÓN El catálogo Filtra por forma o por aroma. To",
+      "horizontalOverflow": false,
+      "consoleErrors": [],
+      "pageErrors": [],
+      "screenshot": "/workspace/screenshots/catalog-qa-mobile.png"
+    }
+  },
+  "brandWarnings": [],
+  "authWarnings": [],
+  "verdictFile": "/workspace/screenshots/catalog-qa.json"
+}

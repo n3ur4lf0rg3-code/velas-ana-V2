@@ -1,0 +1,36 @@
+{
+  "url": "http://127.0.0.1:8080/admin",
+  "viewports": {
+    "desktop": {
+      "width": 1280,
+      "height": 800,
+      "status": 200,
+      "title": "Velas Ana",
+      "hasCanvas": false,
+      "bodyTextLen": 379,
+      "bodyTextHash": "f4b9200e44acbdd36306d20648f72f85b84b3db34219074be9ae31ab592b5645",
+      "bodyTextPrefix": "Inicio Catálogo Cómo comprar La casa Velas aromáticas artesanale",
+      "horizontalOverflow": false,
+      "consoleErrors": [],
+      "pageErrors": [],
+      "screenshot": "/workspace/screenshots/admin-google.png"
+    },
+    "mobile": {
+      "width": 390,
+      "height": 844,
+      "status": 200,
+      "title": "Velas Ana",
+      "hasCanvas": false,
+      "bodyTextLen": 342,
+      "bodyTextHash": "7591467829906f5df32ad6659b782866664353eee9d3372530516badd22e5a8e",
+      "bodyTextPrefix": "Velas aromáticas artesanales esculpidas a mano en Ciudad de Méxi",
+      "horizontalOverflow": false,
+      "consoleErrors": [],
+      "pageErrors": [],
+      "screenshot": "/workspace/screenshots/admin-google-mobile.png"
+    }
+  },
+  "brandWarnings": [],
+  "authWarnings": [],
+  "verdictFile": "/workspace/screenshots/admin-google.json"
+}

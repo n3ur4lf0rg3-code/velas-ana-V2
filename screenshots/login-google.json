@@ -1,0 +1,36 @@
+{
+  "url": "http://127.0.0.1:8080/login",
+  "viewports": {
+    "desktop": {
+      "width": 1280,
+      "height": 800,
+      "status": 200,
+      "title": "Velas Ana",
+      "hasCanvas": false,
+      "bodyTextLen": 540,
+      "bodyTextHash": "2228f1d9d771226f1ca8b56425fbb395a027bfc85bf838812facab7b8690ede3",
+      "bodyTextPrefix": "Inicio Catálogo Cómo comprar La casa LA CASA Administración El c",
+      "horizontalOverflow": false,
+      "consoleErrors": [],
+      "pageErrors": [],
+      "screenshot": "/workspace/screenshots/login-google.png"
+    },
+    "mobile": {
+      "width": 390,
+      "height": 844,
+      "status": 200,
+      "title": "Velas Ana",
+      "hasCanvas": false,
+      "bodyTextLen": 503,
+      "bodyTextHash": "be26819cc9c86f3f6dd6c400bd9f5699127bc80abe4e665b52d0165397657ab5",
+      "bodyTextPrefix": "LA CASA Administración El catálogo, los aromas, los colores y el",
+      "horizontalOverflow": false,
+      "consoleErrors": [],
+      "pageErrors": [],
+      "screenshot": "/workspace/screenshots/login-google-mobile.png"
+    }
+  },
+  "brandWarnings": [],
+  "authWarnings": [],
+  "verdictFile": "/workspace/screenshots/login-google.json"
+}
