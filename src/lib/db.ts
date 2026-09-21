@@ -119,13 +119,9 @@ async function createPgliteSql(): Promise<Sql> {
   // Embedded Postgres, imported on demand so it never loads on the Neon path.
   // One in-memory instance per process, shared across HMR module instances, so
   // data survives source edits (it resets on dev-server restart).
-  const isServerless = !!(
-    process.env.VERCEL || process.env.AWS_LAMBDA_FUNCTION_NAME
-  );
+  const isServerless = !!(process.env.VERCEL || process.env.AWS_LAMBDA_FUNCTION_NAME);
   if (isServerless) {
-    throw new Error(
-      "PGLite no está disponible en Vercel. Usa Firebase para la tienda o configura DATABASE_URL (Neon).",
-    );
+    throw new Error("PGLite deshabilitado en Vercel");
   }
   globalRef.__pgliteInstance__ ??= (async () => {
     const { PGlite } = await import("@electric-sql/pglite");
@@ -238,8 +234,12 @@ export async function getPglite(): Promise<import("@electric-sql/pglite").PGlite
  * module kick it off immediately (see bottom of file).
  */
 export function ensureDbReady(): Promise<void> {
-  if (dbSource !== "pglite") return Promise.resolve();
-  return getSql().then(() => undefined);
+  const isServerless = !!(
+    typeof process !== "undefined" &&
+    (process.env.VERCEL || process.env.AWS_LAMBDA_FUNCTION_NAME)
+  );
+  if (dbSource !== "pglite" || isServerless) return Promise.resolve();
+  return getSql().then(() => undefined).catch(() => undefined);
 }
 
 // Server-only eager start: kick PGLite bootstrap as soon as this module loads in
@@ -247,14 +247,17 @@ export function ensureDbReady(): Promise<void> {
 const globalBoot = globalThis as typeof globalThis & {
   __pgBootstrapPromise__?: Promise<void>;
 };
+// PGLite desactivado en producción/serverless (Vercel).
+// La tienda usa Firebase. No arrancar PGLite aquí.
 if (typeof window === "undefined" && dbSource === "pglite") {
-  // En Vercel/serverless PGLite no tiene el archivo de datos → no forzar bootstrap
   const isServerless = !!(process.env.VERCEL || process.env.AWS_LAMBDA_FUNCTION_NAME);
-  if (!isServerless) {
+  if (isServerless) {
+    console.warn("[db] PGLite omitido en Vercel (usar Firebase / DATABASE_URL)");
+  } else {
     globalBoot.__pgBootstrapPromise__ ??= ensureDbReady().catch((err) => {
       globalBoot.__pgBootstrapPromise__ = undefined;
       console.error("[db] PGLite bootstrap failed:", err);
-      throw err;
+      // No relanzar el error para no tumbar el proceso
     });
   }
 }
