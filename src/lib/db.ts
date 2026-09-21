@@ -230,9 +230,13 @@ const globalBoot = globalThis as typeof globalThis & {
   __pgBootstrapPromise__?: Promise<void>;
 };
 if (typeof window === "undefined" && dbSource === "pglite") {
-  globalBoot.__pgBootstrapPromise__ ??= ensureDbReady().catch((err) => {
-    globalBoot.__pgBootstrapPromise__ = undefined;
-    console.error("[db] PGLite bootstrap failed:", err);
-    throw err;
-  });
+  // En Vercel/serverless PGLite no tiene el archivo de datos → no forzar bootstrap
+  const isServerless = !!(process.env.VERCEL || process.env.AWS_LAMBDA_FUNCTION_NAME);
+  if (!isServerless) {
+    globalBoot.__pgBootstrapPromise__ ??= ensureDbReady().catch((err) => {
+      globalBoot.__pgBootstrapPromise__ = undefined;
+      console.error("[db] PGLite bootstrap failed:", err);
+      throw err;
+    });
+  }
 }
