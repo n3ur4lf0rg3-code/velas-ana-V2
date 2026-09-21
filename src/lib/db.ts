@@ -16,7 +16,17 @@ const databaseUrl =
  * the app has a working database even with nothing configured — the live preview
  * included. Swap in Neon later by just setting `DATABASE_URL`; no code changes.
  */
-export const dbSource: DbSource = databaseUrl ? "neon" : "pglite";
+const isServerless = !!(
+  typeof process !== "undefined" &&
+  (process.env.VERCEL || process.env.AWS_LAMBDA_FUNCTION_NAME)
+);
+
+// En Vercel nunca usamos PGLite (falla con ENOENT)
+export const dbSource: DbSource = databaseUrl
+  ? "neon"
+  : isServerless
+    ? "neon"
+    : "pglite";
 
 /**
  * Minimal shared SQL surface, satisfied by both Neon and PGLite. Both the
@@ -109,6 +119,14 @@ async function createPgliteSql(): Promise<Sql> {
   // Embedded Postgres, imported on demand so it never loads on the Neon path.
   // One in-memory instance per process, shared across HMR module instances, so
   // data survives source edits (it resets on dev-server restart).
+  const isServerless = !!(
+    process.env.VERCEL || process.env.AWS_LAMBDA_FUNCTION_NAME
+  );
+  if (isServerless) {
+    throw new Error(
+      "PGLite no está disponible en Vercel. Usa Firebase para la tienda o configura DATABASE_URL (Neon).",
+    );
+  }
   globalRef.__pgliteInstance__ ??= (async () => {
     const { PGlite } = await import("@electric-sql/pglite");
     const pg = new PGlite({
