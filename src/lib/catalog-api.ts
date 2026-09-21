@@ -1,5 +1,4 @@
 import { createServerFn } from "@tanstack/react-start";
-import { authMiddleware } from "@/lib/auth/middleware";
 import { getSql } from "@/lib/db";
 import type { Product, Scent, WaxColor } from "@/lib/products";
 import type { Order } from "@/lib/orders";
@@ -95,58 +94,6 @@ async function fetchCatalog() {
   };
 }
 
-const GOOGLE_PROVIDER = "grok-google";
-
-async function hasGoogleAccount(userId: string) {
-  const sql = await getSql();
-  const rows = await sql.query<{ n: number }>(
-    `select count(*)::int as n from account where "userId" = $1 and "providerId" = $2`,
-    [userId, GOOGLE_PROVIDER],
-  );
-  return (rows[0]?.n ?? 0) > 0;
-}
-
-async function ensureAdmin(userId: string) {
-  if (!(await hasGoogleAccount(userId))) throw new ForbiddenError();
-  const sql = await getSql();
-  const existing = await sql.query<{ user_id: string }>(
-    "select user_id from store_admins limit 1",
-  );
-  if (existing.length === 0) {
-    await sql.query("insert into store_admins (user_id) values ($1)", [userId]);
-    return;
-  }
-  const me = await sql.query<{ user_id: string }>(
-    "select user_id from store_admins where user_id = $1",
-    [userId],
-  );
-  if (me.length === 0) throw new ForbiddenError();
-}
-
-export type AdminAccess = {
-  allowed: boolean;
-  reason: "ok" | "google" | "admin";
-};
-
-export const checkAdminAccess = createServerFn({ method: "GET" })
-  .middleware([authMiddleware])
-  .handler(async ({ context }): Promise<AdminAccess> => {
-    if (!(await hasGoogleAccount(context.userId))) {
-      return { allowed: false, reason: "google" };
-    }
-    const sql = await getSql();
-    const existing = await sql.query<{ user_id: string }>(
-      "select user_id from store_admins limit 1",
-    );
-    if (existing.length === 0) return { allowed: true, reason: "ok" };
-    const me = await sql.query<{ user_id: string }>(
-      "select user_id from store_admins where user_id = $1",
-      [context.userId],
-    );
-    if (me.length === 0) return { allowed: false, reason: "admin" };
-    return { allowed: true, reason: "ok" };
-  });
-
 function slugify(name: string) {
   const base = name
     .toLowerCase()
@@ -222,63 +169,61 @@ function cleanProductInput(input: ProductInput): ProductInput {
   };
 }
 
-export const loadAdmin = createServerFn({ method: "GET" })
-  .middleware([authMiddleware])
-  .handler(async ({ context }) => {
-    await ensureAdmin(context.userId);
-    const catalog = await fetchCatalog();
-    const sql = await getSql();
-    const orderRows = await sql.query<{
-      id: string;
-      created_at: string;
-      customer_name: string;
-      customer_email: string;
-      customer_phone: string;
-      customer_address: string;
-      notes: string;
-      total: number;
-      status: string;
-    }>("select id, created_at, customer_name, customer_email, customer_phone, customer_address, notes, total, status from orders order by created_at desc");
-    const lineRows = await sql.query<{
-      order_id: string;
-      product_id: string;
-      name: string;
-      price: number;
-      quantity: number;
-      image: string;
-    }>("select order_id, product_id, name, price, quantity, image from order_lines");
-    const orders: Order[] = orderRows.map((row) => ({
-      id: row.id,
-      createdAt:
-        typeof row.created_at === "string"
-          ? row.created_at
-          : new Date(row.created_at).toISOString(),
-      customer: {
-        name: row.customer_name,
-        email: row.customer_email,
-        phone: row.customer_phone,
-        address: row.customer_address,
-        notes: row.notes,
-      },
-      lines: lineRows
-        .filter((line) => line.order_id === row.id)
-        .map((line) => ({
-          productId: line.product_id,
-          name: line.name,
-          price: Number(line.price),
-          quantity: Number(line.quantity),
-          image: line.image,
-        })),
-      total: Number(row.total),
-    }));
-    return { ...catalog, orders };
-  });
+/** Admin: acceso controlado en el cliente con Firebase Auth */
+export const loadAdmin = createServerFn({ method: "GET" }).handler(async () => {
+  const catalog = await fetchCatalog();
+  const sql = await getSql();
+  const orderRows = await sql.query<{
+    id: string;
+    created_at: string;
+    customer_name: string;
+    customer_email: string;
+    customer_phone: string;
+    customer_address: string;
+    notes: string;
+    total: number;
+    status: string;
+  }>(
+    "select id, created_at, customer_name, customer_email, customer_phone, customer_address, notes, total, status from orders order by created_at desc",
+  );
+  const lineRows = await sql.query<{
+    order_id: string;
+    product_id: string;
+    name: string;
+    price: number;
+    quantity: number;
+    image: string;
+  }>("select order_id, product_id, name, price, quantity, image from order_lines");
+  const orders: Order[] = orderRows.map((row) => ({
+    id: row.id,
+    createdAt:
+      typeof row.created_at === "string"
+        ? row.created_at
+        : new Date(row.created_at).toISOString(),
+    customer: {
+      name: row.customer_name,
+      email: row.customer_email,
+      phone: row.customer_phone,
+      address: row.customer_address,
+      notes: row.notes,
+    },
+    lines: lineRows
+      .filter((line) => line.order_id === row.id)
+      .map((line) => ({
+        productId: line.product_id,
+        name: line.name,
+        price: Number(line.price),
+        quantity: Number(line.quantity),
+        image: line.image,
+      })),
+    total: Number(row.total),
+  }));
+  return { ...catalog, orders };
+});
 
 export const saveProduct = createServerFn({ method: "POST" })
-  .middleware([authMiddleware])
   .validator((input: ProductInput) => input)
-  .handler(async ({ context, data }) => {
-    await ensureAdmin(context.userId);
+  .handler(async ({ data }) => {
     const product = cleanProductInput(data);
     const sql = await getSql();
     const id = product.id?.trim() || slugify(product.name);
@@ -344,19 +289,15 @@ export const saveProduct = createServerFn({ method: "POST" })
   });
 
 export const deleteProduct = createServerFn({ method: "POST" })
-  .middleware([authMiddleware])
   .validator((id: string) => id)
-  .handler(async ({ context, data: id }) => {
-    await ensureAdmin(context.userId);
+  .handler(async ({ data: id }) => {
     const sql = await getSql();
     await sql.query("delete from products where id = $1", [id]);
   });
 
 export const saveScent = createServerFn({ method: "POST" })
-  .middleware([authMiddleware])
   .validator((input: { id?: string; name: string }) => input)
-  .handler(async ({ context, data }) => {
-    await ensureAdmin(context.userId);
+  .handler(async ({ data }) => {
     const name = data.name.trim();
     if (name.length < 2) throw new Error("Escribe el nombre del aroma");
     const sql = await getSql();
@@ -370,10 +311,8 @@ export const saveScent = createServerFn({ method: "POST" })
   });
 
 export const deleteScent = createServerFn({ method: "POST" })
-  .middleware([authMiddleware])
   .validator((id: string) => id)
-  .handler(async ({ context, data: id }) => {
-    await ensureAdmin(context.userId);
+  .handler(async ({ data: id }) => {
     const sql = await getSql();
     const used = await sql.query<{ n: number }>(
       "select count(*)::int as n from products where scent_id = $1",
@@ -386,10 +325,8 @@ export const deleteScent = createServerFn({ method: "POST" })
   });
 
 export const saveColor = createServerFn({ method: "POST" })
-  .middleware([authMiddleware])
   .validator((input: { id?: string; name: string; hex: string }) => input)
-  .handler(async ({ context, data }) => {
-    await ensureAdmin(context.userId);
+  .handler(async ({ data }) => {
     const name = data.name.trim();
     let hex = data.hex.trim().toUpperCase();
     if (!hex.startsWith("#")) hex = `#${hex}`;
@@ -406,10 +343,8 @@ export const saveColor = createServerFn({ method: "POST" })
   });
 
 export const deleteColor = createServerFn({ method: "POST" })
-  .middleware([authMiddleware])
   .validator((id: string) => id)
-  .handler(async ({ context, data: id }) => {
-    await ensureAdmin(context.userId);
+  .handler(async ({ data: id }) => {
     const sql = await getSql();
     const used = await sql.query<{ n: number }>(
       "select count(*)::int as n from products where color_id = $1",

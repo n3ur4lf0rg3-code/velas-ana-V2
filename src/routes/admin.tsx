@@ -1,11 +1,13 @@
 import { useCallback, useEffect, useState } from "react";
-import { createFileRoute, Link } from "@tanstack/react-router";
-import { RedirectToSignIn } from "@/lib/auth/gates";
-import { useCurrentUserState } from "@/lib/auth/use-current-user";
+import { createFileRoute, Link, Navigate } from "@tanstack/react-router";
 import { AdminProductForm } from "@/components/admin-product-form";
-import { GoogleSignIn } from "@/components/google-sign-in";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import {
+  isAdminEmail,
+  signOutAdmin,
+  useFirebaseUser,
+} from "@/lib/firebase-auth";
 import {
   deleteColor,
   deleteProduct,
@@ -26,7 +28,7 @@ export const Route = createFileRoute("/admin")({ component: AdminPage });
 type Tab = "productos" | "aromas" | "colores" | "pedidos";
 
 function AdminPage() {
-  const { user, isPending } = useCurrentUserState();
+  const { user, isPending } = useFirebaseUser();
   const [tab, setTab] = useState<Tab>("productos");
   const [products, setProducts] = useState<Product[]>([]);
   const [scents, setScents] = useState<Scent[]>([]);
@@ -45,14 +47,15 @@ function AdminPage() {
   }, []);
 
   useEffect(() => {
-    if (isPending || !user) return;
-    void refresh().catch((error: Error) => {
-      if (error.message === "Unauthorized") setStatus("loading");
-      else setStatus("forbidden");
-    });
+    if (isPending) return;
+    if (!user || !isAdminEmail(user.email)) {
+      setStatus("forbidden");
+      return;
+    }
+    void refresh().catch(() => setStatus("forbidden"));
   }, [isPending, user, refresh]);
 
-  if (isPending || (user && status === "loading")) {
+  if (isPending || (user && isAdminEmail(user.email) && status === "loading")) {
     return (
       <main className="mx-auto max-w-6xl px-4 py-16 sm:px-6">
         <div className="h-10 w-48 animate-pulse rounded-md bg-surface" />
@@ -61,24 +64,8 @@ function AdminPage() {
     );
   }
 
-  if (!user) return <RedirectToSignIn to="/login" />;
-
-  if (status === "forbidden") {
-    return (
-      <main className="mx-auto max-w-md px-4 py-20 text-center">
-        <h1 className="font-display text-headline">Entra con Google</h1>
-        <p className="mt-3 text-muted">
-          La administración de Velas Ana solo se abre con una cuenta de Google.
-          La sesión de Grok no alcanza.
-        </p>
-        <GoogleSignIn />
-        <div className="mt-4">
-          <Button asChild variant="ghost">
-            <Link to="/">Volver a la tienda</Link>
-          </Button>
-        </div>
-      </main>
-    );
+  if (!user || !isAdminEmail(user.email) || status === "forbidden") {
+    return <Navigate to="/login" />;
   }
 
   return (
@@ -89,6 +76,22 @@ function AdminPage() {
         Productos, aromas, colores, stock, precios e imágenes. Los cambios se
         ven en la tienda al momento.
       </p>
+      <p className="mt-1 text-xs text-subtle">{user.email}</p>
+      <div className="mt-4 flex flex-wrap gap-2">
+        <Button
+          type="button"
+          variant="ghost"
+          size="sm"
+          onClick={() =>
+            void signOutAdmin().then(() => window.location.assign("/login"))
+          }
+        >
+          Cerrar sesión
+        </Button>
+        <Button asChild variant="ghost" size="sm">
+          <Link to="/">Ver tienda</Link>
+        </Button>
+      </div>
 
       <div className="mt-8 flex flex-wrap gap-2">
         {(
