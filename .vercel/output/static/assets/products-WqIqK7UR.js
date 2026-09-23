@@ -1,1 +1,0 @@
-var e=[{id:`rosa`,label:`Rosas`},{id:`frappe`,label:`Frappés y café`},{id:`wax-melt`,label:`Wax melts`},{id:`decorativa`,label:`Decorativas`}];function t(t){return e.find(e=>e.id===t)?.label??t}export{t as n,e as t};

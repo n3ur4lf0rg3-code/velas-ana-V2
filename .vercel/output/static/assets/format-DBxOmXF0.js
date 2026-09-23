@@ -1,1 +1,0 @@
-function e(e){return new Intl.NumberFormat(`es-MX`,{style:`currency`,currency:`MXN`,maximumFractionDigits:0}).format(e)}function t(e){return new Intl.DateTimeFormat(`es-MX`,{day:`numeric`,month:`long`,year:`numeric`}).format(new Date(e))}export{e as n,t};
