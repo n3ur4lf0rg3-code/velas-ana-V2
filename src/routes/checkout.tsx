@@ -97,6 +97,10 @@ function CheckoutPage() {
           items: items.map((item) => ({
             productId: item.productId,
             quantity: item.quantity,
+            scentId: item.scentId,
+            scentName: item.scentName,
+            colorId: item.colorId,
+            colorName: item.colorName,
           })),
         },
       });
@@ -169,7 +173,7 @@ function CheckoutPage() {
             <Textarea
               id="notes"
               name="notes"
-              placeholder="Horario de entrega, empaque de regalo, aroma de recambio…"
+              placeholder="Horario de entrega, empaque de regalo…"
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
             />
@@ -181,9 +185,12 @@ function CheckoutPage() {
           <h2 className="font-display text-title">Tu mesa</h2>
           <ul className="mt-4 space-y-3">
             {lines.map((line) => (
-              <li key={line.productId} className="flex justify-between gap-3 text-sm">
+              <li key={line.key} className="flex justify-between gap-3 text-sm">
                 <span className="text-muted">
                   {line.product.name} × {line.quantity}
+                  <span className="block text-xs text-subtle">
+                    {line.scentName} · {line.colorName}
+                  </span>
                 </span>
                 <span className="tabular-nums">{formatPrice(line.lineTotal)}</span>
               </li>
