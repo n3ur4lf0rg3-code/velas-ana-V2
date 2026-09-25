@@ -1,18 +1,20 @@
 import { ShoppingBag } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
-import { useCart } from "@/lib/cart";
+import { useCart, type CartOptions } from "@/lib/cart";
 import type { Product } from "@/lib/products";
 
 export function AddToCartButton({
   product,
   quantity = 1,
+  options,
   size = "lg",
   compact = false,
   className,
 }: {
   product: Product;
   quantity?: number;
+  options: CartOptions;
   size?: "sm" | "md" | "lg";
   compact?: boolean;
   className?: string;
@@ -26,8 +28,10 @@ export function AddToCartButton({
       className={className}
       disabled={soldOut}
       onClick={() => {
-        add(product.id, quantity);
-        toast.success(`${product.name} se agregó al carrito`);
+        add(product.id, quantity, options);
+        toast.success(
+          `${product.name} · ${options.scentName} · ${options.colorName} se agregó al carrito`,
+        );
       }}
     >
       <ShoppingBag className="size-4" />
