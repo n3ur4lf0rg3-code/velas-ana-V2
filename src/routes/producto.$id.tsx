@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { Clock, Flame, Weight } from "lucide-react";
 import { AddToCartButton } from "@/components/add-to-cart-button";
@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button";
 import { getCatalogProduct, listCatalog } from "@/lib/catalog-api";
 import { formatPrice } from "@/lib/format";
 import { shapeLabel } from "@/lib/products";
+import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/producto/$id")({
   loader: async ({ params }) => {
@@ -17,14 +18,30 @@ export const Route = createFileRoute("/producto/$id")({
       getCatalogProduct({ data: params.id }),
       listCatalog(),
     ]);
-    return { product, products: catalog.products };
+    return {
+      product,
+      products: catalog.products,
+      scents: catalog.scents,
+      colors: catalog.colors,
+    };
   },
   component: ProductPage,
 });
 
 function ProductPage() {
-  const { product, products } = Route.useLoaderData();
+  const { product, products, scents, colors } = Route.useLoaderData();
   const [quantity, setQuantity] = useState(1);
+  const [scentId, setScentId] = useState(product?.scentId ?? "");
+  const [colorId, setColorId] = useState(product?.colorId ?? "");
+
+  const selectedScent = useMemo(
+    () => scents.find((s) => s.id === scentId) ?? scents[0],
+    [scents, scentId],
+  );
+  const selectedColor = useMemo(
+    () => colors.find((c) => c.id === colorId) ?? colors[0],
+    [colors, colorId],
+  );
 
   if (!product) {
     return (
@@ -52,6 +69,14 @@ function ProductPage() {
     .slice(0, 3);
   const maxQty = Math.max(1, product.stock);
 
+  const options = {
+    scentId: selectedScent?.id ?? product.scentId,
+    scentName: selectedScent?.name ?? product.scentName,
+    colorId: selectedColor?.id ?? product.colorId,
+    colorName: selectedColor?.name ?? product.colorName,
+    colorHex: selectedColor?.hex ?? product.colorHex,
+  };
+
   return (
     <main className="mx-auto max-w-6xl px-4 py-10 sm:px-6">
       <p className="text-sm text-muted">
@@ -73,15 +98,15 @@ function ProductPage() {
         <div>
           <div className="flex flex-wrap gap-2">
             <Badge>{shapeLabel(product.shape)}</Badge>
-            <Badge>{product.scentName}</Badge>
-            <Badge>{product.colorName}</Badge>
             {product.isNew ? (
               <Badge className="text-gold-fg border-gold/40">Nueva</Badge>
             ) : null}
           </div>
           <h1 className="font-display mt-4 text-headline">{product.name}</h1>
           <p className="mt-2 text-muted">{product.tagline}</p>
-          <p className="mt-6 text-2xl font-medium tabular-nums">{formatPrice(product.price)}</p>
+          <p className="mt-6 text-2xl font-medium tabular-nums">
+            {formatPrice(product.price)}
+          </p>
           <p className="mt-2 text-sm text-muted">
             {product.stock < 1
               ? "Agotada por ahora"
@@ -90,6 +115,58 @@ function ProductPage() {
                 : `${product.stock} en el atelier`}
           </p>
           <p className="mt-6 leading-relaxed text-muted">{product.description}</p>
+
+          {/* Aroma */}
+          <div className="mt-8">
+            <p className="text-xs tracking-[0.16em] uppercase text-subtle">
+              Aroma
+            </p>
+            <div className="mt-2 flex flex-wrap gap-2">
+              {scents.map((scent) => (
+                <button
+                  key={scent.id}
+                  type="button"
+                  onClick={() => setScentId(scent.id)}
+                  className={cn(
+                    "h-11 rounded-full px-4 text-sm transition-colors",
+                    scentId === scent.id
+                      ? "bg-primary text-primary-fg"
+                      : "border border-border bg-raised text-fg hover:border-gold",
+                  )}
+                >
+                  {scent.name}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Color */}
+          <div className="mt-6">
+            <p className="text-xs tracking-[0.16em] uppercase text-subtle">
+              Color de cera
+            </p>
+            <div className="mt-2 flex flex-wrap gap-2">
+              {colors.map((color) => (
+                <button
+                  key={color.id}
+                  type="button"
+                  onClick={() => setColorId(color.id)}
+                  className={cn(
+                    "flex h-11 items-center gap-2 rounded-full px-4 text-sm transition-colors",
+                    colorId === color.id
+                      ? "bg-primary text-primary-fg"
+                      : "border border-border bg-raised text-fg hover:border-gold",
+                  )}
+                >
+                  <span
+                    className="size-3 rounded-full border border-border/50"
+                    style={{ backgroundColor: color.hex }}
+                  />
+                  {color.name}
+                </button>
+              ))}
+            </div>
+          </div>
 
           <ul className="mt-6 space-y-1.5 text-sm text-fg">
             {product.notes.map((note) => (
@@ -133,6 +210,7 @@ function ProductPage() {
             <AddToCartButton
               product={product}
               quantity={quantity}
+              options={options}
               size="md"
               className="flex-1"
             />
