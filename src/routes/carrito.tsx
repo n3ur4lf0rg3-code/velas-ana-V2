@@ -54,7 +54,7 @@ function CartPage() {
       <div className="mt-10 grid gap-10 lg:grid-cols-[1fr_20rem]">
         <ul className="divide-y divide-border border-y border-border">
           {lines.map((line) => (
-            <li key={line.productId} className="flex gap-4 py-6">
+            <li key={line.key} className="flex gap-4 py-6">
               <Link
                 to="/producto/$id"
                 params={{ id: line.product.id }}
@@ -77,6 +77,13 @@ function CartPage() {
                       {line.product.name}
                     </Link>
                     <p className="text-sm text-muted">{line.product.tagline}</p>
+                    <p className="mt-1 flex items-center gap-2 text-sm text-subtle">
+                      <span
+                        className="inline-block size-2.5 rounded-full border border-border"
+                        style={{ backgroundColor: line.colorHex }}
+                      />
+                      {line.scentName} · {line.colorName}
+                    </p>
                   </div>
                   <p className="text-sm font-medium tabular-nums">
                     {formatPrice(line.lineTotal)}
@@ -86,11 +93,11 @@ function CartPage() {
                   <QuantitySelector
                     value={line.quantity}
                     max={Math.max(1, line.product.stock)}
-                    onChange={(qty) => setQuantity(line.productId, qty)}
+                    onChange={(qty) => setQuantity(line.key, qty)}
                   />
                   <button
                     type="button"
-                    onClick={() => remove(line.productId)}
+                    onClick={() => remove(line.key)}
                     className="flex size-11 items-center justify-center rounded-md text-muted hover:text-danger"
                     aria-label={`Quitar ${line.product.name}`}
                   >
