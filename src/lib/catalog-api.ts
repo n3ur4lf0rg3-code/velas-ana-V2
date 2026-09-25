@@ -103,7 +103,7 @@ function slugify(name: string) {
     .replace(/^-+|-+$/g, "")
     .slice(0, 40);
   const suffix = Math.random().toString(36).slice(2, 6);
-  return `${base || "pieza"}-${suffix}`;
+  return `\( {base || "pieza"}- \){suffix}`;
 }
 
 export type CatalogPayload = {
@@ -364,7 +364,14 @@ export type CheckoutPayload = {
     address: string;
     notes: string;
   };
-  items: { productId: string; quantity: number }[];
+  items: {
+    productId: string;
+    quantity: number;
+    scentId?: string;
+    scentName?: string;
+    colorId?: string;
+    colorName?: string;
+  }[];
 };
 
 export const placeOrder = createServerFn({ method: "POST" })
@@ -409,9 +416,13 @@ export const placeOrder = createServerFn({ method: "POST" })
         throw new Error(`No hay suficiente ${product.name}.`);
       }
       const price = Number(product.price);
+      const label =
+        item.scentName && item.colorName
+          ? `${product.name} · ${item.scentName} · ${item.colorName}`
+          : product.name;
       lines.push({
         productId: product.id,
-        name: product.name,
+        name: label,
         price,
         quantity: qty,
         image: product.image,
