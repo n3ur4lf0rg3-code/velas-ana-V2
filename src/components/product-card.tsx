@@ -47,7 +47,18 @@ export function ProductCard({ product }: { product: Product }) {
           {soldOut ? (
             <span className="text-sm text-muted">Agotada</span>
           ) : (
-            <AddToCartButton product={product} size="sm" compact />
+            <AddToCartButton
+              product={product}
+              size="sm"
+              compact
+              options={{
+                scentId: product.scentId,
+                scentName: product.scentName,
+                colorId: product.colorId,
+                colorName: product.colorName,
+                colorHex: product.colorHex,
+              }}
+            />
           )}
         </div>
       </div>
