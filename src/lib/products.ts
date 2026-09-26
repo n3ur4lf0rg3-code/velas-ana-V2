@@ -38,6 +38,8 @@ export type Product = {
   featured: boolean;
   isNew: boolean;
   image: string;
+  /** Ids de colores que el cliente puede elegir. Vacío = todos. */
+  availableColorIds: string[];
 };
 
 export function shapeLabel(id: string) {

@@ -35,6 +35,11 @@ export function AdminProductForm({
   const [featured, setFeatured] = useState(product?.featured ?? false);
   const [isNew, setIsNew] = useState(product?.isNew ?? false);
   const [image, setImage] = useState(product?.image ?? "");
+  const [availableColorIds, setAvailableColorIds] = useState<string[]>(
+    product?.availableColorIds?.length
+      ? product.availableColorIds
+      : colors.map((c) => c.id),
+  );
   const [error, setError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
 
@@ -54,12 +59,16 @@ export function AdminProductForm({
         shape,
         scentId,
         colorId,
-        notes: notes.split(",").map((n) => n.trim()).filter(Boolean),
+        notes: notes
+          .split(",")
+          .map((n) => n.trim())
+          .filter(Boolean),
         burnHours,
         weight,
         featured,
         isNew,
         image,
+        availableColorIds,
       });
     } catch (err) {
       setError(err instanceof Error ? err.message : "No se pudo guardar");
@@ -78,7 +87,11 @@ export function AdminProductForm({
         </Field>
       </div>
       <Field label="Descripción" htmlFor="p-desc">
-        <Textarea id="p-desc" value={description} onChange={(e) => setDescription(e.target.value)} />
+        <Textarea
+          id="p-desc"
+          value={description}
+          onChange={(e) => setDescription(e.target.value)}
+        />
       </Field>
       <Field label="Cuidado" htmlFor="p-care">
         <Textarea id="p-care" value={care} onChange={(e) => setCare(e.target.value)} />
@@ -103,7 +116,11 @@ export function AdminProductForm({
           />
         </Field>
         <Field label="Quema" htmlFor="p-burn">
-          <Input id="p-burn" value={burnHours} onChange={(e) => setBurnHours(e.target.value)} />
+          <Input
+            id="p-burn"
+            value={burnHours}
+            onChange={(e) => setBurnHours(e.target.value)}
+          />
         </Field>
         <Field label="Peso" htmlFor="p-weight">
           <Input id="p-weight" value={weight} onChange={(e) => setWeight(e.target.value)} />
@@ -124,7 +141,7 @@ export function AdminProductForm({
             ))}
           </select>
         </Field>
-        <Field label="Aroma" htmlFor="p-scent">
+        <Field label="Aroma (por defecto)" htmlFor="p-scent">
           <select
             id="p-scent"
             className="h-11 w-full rounded-md border border-border bg-raised px-3.5 text-sm"
@@ -138,7 +155,7 @@ export function AdminProductForm({
             ))}
           </select>
         </Field>
-        <Field label="Color" htmlFor="p-color">
+        <Field label="Color (por defecto / imagen)" htmlFor="p-color">
           <select
             id="p-color"
             className="h-11 w-full rounded-md border border-border bg-raised px-3.5 text-sm"
@@ -153,6 +170,42 @@ export function AdminProductForm({
           </select>
         </Field>
       </div>
+
+      <div>
+        <p className="mb-1 text-sm font-medium">Colores disponibles para el cliente</p>
+        <p className="mb-3 text-xs text-subtle">
+          Solo los marcados aparecerán en la ficha del producto.
+        </p>
+        <div className="flex flex-wrap gap-3">
+          {colors.map((color) => {
+            const checked = availableColorIds.includes(color.id);
+            return (
+              <label
+                key={color.id}
+                className="flex h-11 items-center gap-2 rounded-full border border-border bg-raised px-3 text-sm"
+              >
+                <input
+                  type="checkbox"
+                  checked={checked}
+                  onChange={(e) => {
+                    setAvailableColorIds((prev) =>
+                      e.target.checked
+                        ? [...prev, color.id]
+                        : prev.filter((id) => id !== color.id),
+                    );
+                  }}
+                />
+                <span
+                  className="size-3 rounded-full border border-border"
+                  style={{ backgroundColor: color.hex }}
+                />
+                {color.name}
+              </label>
+            );
+          })}
+        </div>
+      </div>
+
       <Field label="Notas de aroma (separadas por coma)" htmlFor="p-notes">
         <Input id="p-notes" value={notes} onChange={(e) => setNotes(e.target.value)} />
       </Field>

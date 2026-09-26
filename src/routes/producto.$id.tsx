@@ -30,17 +30,26 @@ export const Route = createFileRoute("/producto/$id")({
 
 function ProductPage() {
   const { product, products, scents, colors } = Route.useLoaderData();
+
+  const availableColors = useMemo(() => {
+    if (!product) return colors;
+    if (!product.availableColorIds?.length) return colors;
+    return colors.filter((c) => product.availableColorIds.includes(c.id));
+  }, [product, colors]);
+
   const [quantity, setQuantity] = useState(1);
   const [scentId, setScentId] = useState(product?.scentId ?? "");
-  const [colorId, setColorId] = useState(product?.colorId ?? "");
+  const [colorId, setColorId] = useState(
+    product?.availableColorIds?.[0] ?? product?.colorId ?? "",
+  );
 
   const selectedScent = useMemo(
     () => scents.find((s) => s.id === scentId) ?? scents[0],
     [scents, scentId],
   );
   const selectedColor = useMemo(
-    () => colors.find((c) => c.id === colorId) ?? colors[0],
-    [colors, colorId],
+    () => availableColors.find((c) => c.id === colorId) ?? availableColors[0],
+    [availableColors, colorId],
   );
 
   if (!product) {
@@ -67,7 +76,9 @@ function ProductPage() {
         (p.shape === product.shape || p.scentId === product.scentId),
     )
     .slice(0, 3);
-  const maxQty = Math.max(1, product.stock);
+
+  const soldOut = product.stock < 1;
+  const maxQty = soldOut ? 10 : Math.max(1, product.stock);
 
   const options = {
     scentId: selectedScent?.id ?? product.scentId,
@@ -101,6 +112,9 @@ function ProductPage() {
             {product.isNew ? (
               <Badge className="text-gold-fg border-gold/40">Nueva</Badge>
             ) : null}
+            {soldOut ? (
+              <Badge className="border-gold/40 text-gold-fg">Bajo pedido</Badge>
+            ) : null}
           </div>
           <h1 className="font-display mt-4 text-headline">{product.name}</h1>
           <p className="mt-2 text-muted">{product.tagline}</p>
@@ -108,19 +122,16 @@ function ProductPage() {
             {formatPrice(product.price)}
           </p>
           <p className="mt-2 text-sm text-muted">
-            {product.stock < 1
-              ? "Agotada por ahora"
+            {soldOut
+              ? "Agotada en atelier · se entrega en 2–3 días (bajo pedido)"
               : product.stock <= 5
                 ? `Quedan ${product.stock}`
                 : `${product.stock} en el atelier`}
           </p>
           <p className="mt-6 leading-relaxed text-muted">{product.description}</p>
 
-          {/* Aroma */}
           <div className="mt-8">
-            <p className="text-xs tracking-[0.16em] uppercase text-subtle">
-              Aroma
-            </p>
+            <p className="text-xs tracking-[0.16em] uppercase text-subtle">Aroma</p>
             <div className="mt-2 flex flex-wrap gap-2">
               {scents.map((scent) => (
                 <button
@@ -140,13 +151,12 @@ function ProductPage() {
             </div>
           </div>
 
-          {/* Color */}
           <div className="mt-6">
             <p className="text-xs tracking-[0.16em] uppercase text-subtle">
               Color de cera
             </p>
             <div className="mt-2 flex flex-wrap gap-2">
-              {colors.map((color) => (
+              {availableColors.map((color) => (
                 <button
                   key={color.id}
                   type="button"
@@ -197,7 +207,7 @@ function ProductPage() {
                 <Clock className="size-3.5" />
                 Lote
               </dt>
-              <dd className="mt-1">A mano</dd>
+              <dd className="mt-1">{soldOut ? "2–3 días" : "A mano"}</dd>
             </div>
           </dl>
 

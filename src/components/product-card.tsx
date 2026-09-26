@@ -25,7 +25,9 @@ export function ProductCard({ product }: { product: Product }) {
           </Badge>
         ) : null}
         {soldOut ? (
-          <Badge className="absolute top-3 right-3 border-border bg-raised/90">Agotada</Badge>
+          <Badge className="absolute top-3 right-3 border-gold/40 bg-raised/90 text-gold-fg">
+            Bajo pedido
+          </Badge>
         ) : null}
       </Link>
       <div className="flex flex-1 flex-col pt-4">
@@ -44,22 +46,18 @@ export function ProductCard({ product }: { product: Product }) {
         <p className="mt-1 text-sm text-muted">{product.tagline}</p>
         <div className="mt-auto flex items-center justify-between gap-3 pt-4">
           <p className="text-sm font-medium tabular-nums">{formatPrice(product.price)}</p>
-          {soldOut ? (
-            <span className="text-sm text-muted">Agotada</span>
-          ) : (
-            <AddToCartButton
-              product={product}
-              size="sm"
-              compact
-              options={{
-                scentId: product.scentId,
-                scentName: product.scentName,
-                colorId: product.colorId,
-                colorName: product.colorName,
-                colorHex: product.colorHex,
-              }}
-            />
-          )}
+          <AddToCartButton
+            product={product}
+            size="sm"
+            compact
+            options={{
+              scentId: product.scentId,
+              scentName: product.scentName,
+              colorId: product.colorId,
+              colorName: product.colorName,
+              colorHex: product.colorHex,
+            }}
+          />
         </div>
       </div>
     </article>

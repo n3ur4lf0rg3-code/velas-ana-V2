@@ -26,16 +26,23 @@ export function AddToCartButton({
     <Button
       size={size}
       className={className}
-      disabled={soldOut}
       onClick={() => {
         add(product.id, quantity, options);
         toast.success(
-          `${product.name} · ${options.scentName} · ${options.colorName} se agregó al carrito`,
+          soldOut
+            ? `${product.name} · pedido bajo pedido (2–3 días)`
+            : `${product.name} · ${options.scentName} · ${options.colorName} se agregó al carrito`,
         );
       }}
     >
       <ShoppingBag className="size-4" />
-      {soldOut ? "Agotada" : compact ? "Agregar" : "Agregar al carrito"}
+      {soldOut
+        ? compact
+          ? "Pedir"
+          : "Pedir (2–3 días)"
+        : compact
+          ? "Agregar"
+          : "Agregar al carrito"}
     </Button>
   );
 }

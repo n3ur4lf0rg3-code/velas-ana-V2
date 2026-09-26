@@ -31,9 +31,21 @@ type ProductRow = {
   featured: boolean;
   is_new: boolean;
   image: string;
+  available_color_ids: string | null;
 };
 
 function parseNotes(raw: string): string[] {
+  try {
+    const value: unknown = JSON.parse(raw);
+    if (!Array.isArray(value)) return [];
+    return value.filter((item): item is string => typeof item === "string");
+  } catch {
+    return [];
+  }
+}
+
+function parseIdList(raw: string | null | undefined): string[] {
+  if (!raw) return [];
   try {
     const value: unknown = JSON.parse(raw);
     if (!Array.isArray(value)) return [];
@@ -64,13 +76,15 @@ function mapProduct(row: ProductRow): Product {
     featured: Boolean(row.featured),
     isNew: Boolean(row.is_new),
     image: row.image,
+    availableColorIds: parseIdList(row.available_color_ids),
   };
 }
 
 const PRODUCT_SELECT = `
   select p.id, p.name, p.tagline, p.description, p.care, p.price, p.stock, p.shape,
     p.scent_id, s.name as scent_name, p.color_id, c.name as color_name, c.hex as color_hex,
-    p.notes, p.burn_hours, p.weight, p.featured, p.is_new, p.image
+    p.notes, p.burn_hours, p.weight, p.featured, p.is_new, p.image,
+    coalesce(p.available_color_ids, '[]') as available_color_ids
   from products p
   join scents s on s.id = p.scent_id
   join colors c on c.id = p.color_id
@@ -103,7 +117,7 @@ function slugify(name: string) {
     .replace(/^-+|-+$/g, "")
     .slice(0, 40);
   const suffix = Math.random().toString(36).slice(2, 6);
-  return `\( {base || "pieza"}- \){suffix}`;
+  return `${base || "pieza"}-${suffix}`;
 }
 
 export type CatalogPayload = {
@@ -144,6 +158,7 @@ export type ProductInput = {
   featured: boolean;
   isNew: boolean;
   image: string;
+  availableColorIds: string[];
 };
 
 function cleanProductInput(input: ProductInput): ProductInput {
@@ -166,6 +181,7 @@ function cleanProductInput(input: ProductInput): ProductInput {
     burnHours: input.burnHours.trim(),
     weight: input.weight.trim(),
     image: input.image.trim(),
+    availableColorIds: (input.availableColorIds ?? []).filter(Boolean),
   };
 }
 
@@ -228,6 +244,7 @@ export const saveProduct = createServerFn({ method: "POST" })
     const sql = await getSql();
     const id = product.id?.trim() || slugify(product.name);
     const notes = JSON.stringify(product.notes);
+    const availableColorIds = JSON.stringify(product.availableColorIds);
     const existing = await sql.query<{ id: string; image: string }>(
       "select id, image from products where id = $1",
       [id],
@@ -238,7 +255,7 @@ export const saveProduct = createServerFn({ method: "POST" })
         `update products set
           name=$2, tagline=$3, description=$4, care=$5, price=$6, stock=$7, shape=$8,
           scent_id=$9, color_id=$10, notes=$11, burn_hours=$12, weight=$13,
-          featured=$14, is_new=$15, image=$16
+          featured=$14, is_new=$15, image=$16, available_color_ids=$17
          where id=$1`,
         [
           id,
@@ -257,14 +274,15 @@ export const saveProduct = createServerFn({ method: "POST" })
           product.featured,
           product.isNew,
           image,
+          availableColorIds,
         ],
       );
     } else {
       await sql.query(
         `insert into products (
           id, name, tagline, description, care, price, stock, shape, scent_id, color_id,
-          notes, burn_hours, weight, featured, is_new, image
-        ) values ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16)`,
+          notes, burn_hours, weight, featured, is_new, image, available_color_ids
+        ) values ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17)`,
         [
           id,
           product.name,
@@ -282,6 +300,7 @@ export const saveProduct = createServerFn({ method: "POST" })
           product.featured,
           product.isNew,
           image,
+          availableColorIds,
         ],
       );
     }
@@ -405,21 +424,28 @@ export const placeOrder = createServerFn({ method: "POST" })
       ]);
       const product = rows[0];
       if (!product) throw new Error("Una pieza del carrito ya no está en el catálogo");
-      if (Number(product.stock) < qty) {
-        throw new Error(`No hay suficiente ${product.name}. Quedan ${product.stock}.`);
+
+      const inStock = Number(product.stock);
+      const madeToOrder = inStock < qty;
+
+      // Si hay stock, se descuenta. Si no, se pide bajo pedido (2–3 días).
+      if (!madeToOrder) {
+        const updated = await sql.query<{ id: string }>(
+          "update products set stock = stock - $2 where id = $1 and stock >= $2 returning id",
+          [product.id, qty],
+        );
+        if (!updated[0]) {
+          throw new Error(`No hay suficiente ${product.name}.`);
+        }
       }
-      const updated = await sql.query<{ id: string }>(
-        "update products set stock = stock - $2 where id = $1 and stock >= $2 returning id",
-        [product.id, qty],
-      );
-      if (!updated[0]) {
-        throw new Error(`No hay suficiente ${product.name}.`);
-      }
+
       const price = Number(product.price);
-      const label =
-        item.scentName && item.colorName
-          ? `${product.name} · ${item.scentName} · ${item.colorName}`
-          : product.name;
+      const labelParts = [product.name];
+      if (item.scentName) labelParts.push(item.scentName);
+      if (item.colorName) labelParts.push(item.colorName);
+      if (madeToOrder) labelParts.push("bajo pedido 2–3 días");
+      const label = labelParts.join(" · ");
+
       lines.push({
         productId: product.id,
         name: label,
