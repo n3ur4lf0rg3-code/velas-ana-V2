@@ -1,12 +1,13 @@
 import { useMemo, useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { Clock, Flame, Weight } from "lucide-react";
+import { Clock, Flame, Search, Weight } from "lucide-react";
 import { AddToCartButton } from "@/components/add-to-cart-button";
 import { EmptyState } from "@/components/empty-state";
 import { ProductCard } from "@/components/product-card";
 import { QuantitySelector } from "@/components/quantity-selector";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { getCatalogProduct, listCatalog } from "@/lib/catalog-api";
 import { formatPrice } from "@/lib/format";
 import { shapeLabel } from "@/lib/products";
@@ -42,6 +43,7 @@ function ProductPage() {
   const [colorId, setColorId] = useState(
     product?.availableColorIds?.[0] ?? product?.colorId ?? "",
   );
+  const [scentQuery, setScentQuery] = useState("");
 
   const selectedScent = useMemo(
     () => scents.find((s) => s.id === scentId) ?? scents[0],
@@ -51,6 +53,21 @@ function ProductPage() {
     () => availableColors.find((c) => c.id === colorId) ?? availableColors[0],
     [availableColors, colorId],
   );
+
+  const filteredScents = useMemo(() => {
+    const q = scentQuery.trim().toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+    if (!q) {
+      // Sin búsqueda: mostrar el seleccionado + primeros 12
+      const rest = scents.filter((s) => s.id !== selectedScent?.id).slice(0, 12);
+      return selectedScent ? [selectedScent, ...rest] : scents.slice(0, 12);
+    }
+    return scents
+      .filter((s) => {
+        const n = s.name.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+        return n.includes(q);
+      })
+      .slice(0, 20);
+  }, [scents, scentQuery, selectedScent]);
 
   if (!product) {
     return (
@@ -130,27 +147,60 @@ function ProductPage() {
           </p>
           <p className="mt-6 leading-relaxed text-muted">{product.description}</p>
 
+          {/* Aroma con búsqueda */}
           <div className="mt-8">
-            <p className="text-xs tracking-[0.16em] uppercase text-subtle">Aroma</p>
-            <div className="mt-2 flex flex-wrap gap-2">
-              {scents.map((scent) => (
-                <button
-                  key={scent.id}
-                  type="button"
-                  onClick={() => setScentId(scent.id)}
-                  className={cn(
-                    "h-11 rounded-full px-4 text-sm transition-colors",
-                    scentId === scent.id
-                      ? "bg-primary text-primary-fg"
-                      : "border border-border bg-raised text-fg hover:border-gold",
-                  )}
-                >
-                  {scent.name}
-                </button>
-              ))}
+            <div className="flex items-baseline justify-between gap-3">
+              <p className="text-xs tracking-[0.16em] uppercase text-subtle">
+                Aroma
+              </p>
+              {selectedScent ? (
+                <p className="text-sm text-fg">
+                  Elegido: <span className="font-medium">{selectedScent.name}</span>
+                </p>
+              ) : null}
             </div>
+            <div className="relative mt-2">
+              <Search className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-subtle" />
+              <Input
+                value={scentQuery}
+                onChange={(e) => setScentQuery(e.target.value)}
+                placeholder={`Buscar entre ${scents.length} aromas…`}
+                className="pl-10"
+                autoComplete="off"
+              />
+            </div>
+            <div className="mt-3 flex max-h-48 flex-wrap gap-2 overflow-y-auto">
+              {filteredScents.length === 0 ? (
+                <p className="text-sm text-muted">Ningún aroma coincide.</p>
+              ) : (
+                filteredScents.map((scent) => (
+                  <button
+                    key={scent.id}
+                    type="button"
+                    onClick={() => {
+                      setScentId(scent.id);
+                      setScentQuery("");
+                    }}
+                    className={cn(
+                      "h-10 rounded-full px-3.5 text-sm transition-colors",
+                      scentId === scent.id
+                        ? "bg-primary text-primary-fg"
+                        : "border border-border bg-raised text-fg hover:border-gold",
+                    )}
+                  >
+                    {scent.name}
+                  </button>
+                ))
+              )}
+            </div>
+            {!scentQuery ? (
+              <p className="mt-2 text-xs text-subtle">
+                Escribe para buscar los {scents.length} aromas disponibles.
+              </p>
+            ) : null}
           </div>
 
+          {/* Color */}
           <div className="mt-6">
             <p className="text-xs tracking-[0.16em] uppercase text-subtle">
               Color de cera
