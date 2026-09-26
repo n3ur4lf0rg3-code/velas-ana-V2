@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Link, useRouterState } from "@tanstack/react-router";
 import { Menu, ShoppingBag, X } from "lucide-react";
 import { BrandLogo } from "@/components/brand-logo";
@@ -18,16 +18,33 @@ function CartLink() {
   const items = useCart((s) => s.items);
   const hydrated = useCart((s) => s.hydrated);
   const count = hydrated ? cartCount(items) : 0;
+  const prev = useRef(count);
+  const [pop, setPop] = useState(false);
+
+  useEffect(() => {
+    if (count > prev.current) {
+      setPop(true);
+      const t = window.setTimeout(() => setPop(false), 450);
+      prev.current = count;
+      return () => window.clearTimeout(t);
+    }
+    prev.current = count;
+  }, [count]);
 
   return (
     <Link
       to="/carrito"
-      className="relative flex size-11 items-center justify-center rounded-md text-fg hover:bg-surface"
+      className="relative flex size-11 items-center justify-center rounded-md text-fg transition-colors hover:bg-surface active:scale-95"
       aria-label={count ? `Carrito, ${count} piezas` : "Carrito"}
     >
       <ShoppingBag className="size-5" />
       {count > 0 ? (
-        <span className="absolute top-1.5 right-1.5 flex size-5 items-center justify-center rounded-full bg-primary text-xs font-medium leading-none text-primary-fg tabular-nums">
+        <span
+          className={cn(
+            "absolute top-1.5 right-1.5 flex size-5 items-center justify-center rounded-full bg-primary text-xs font-medium leading-none text-primary-fg tabular-nums",
+            pop && "cart-badge-pop",
+          )}
+        >
           {count}
         </span>
       ) : null}
@@ -84,7 +101,7 @@ export function SiteHeader() {
           <CartLink />
           <button
             type="button"
-            className="flex size-11 items-center justify-center rounded-md md:hidden"
+            className="flex size-11 items-center justify-center rounded-md transition-transform active:scale-95 md:hidden"
             onClick={() => setOpen((v) => !v)}
             aria-expanded={open}
             aria-label={open ? "Cerrar menú" : "Abrir menú"}

@@ -8,16 +8,16 @@ export function ProductCard({ product }: { product: Product }) {
   const soldOut = product.stock < 1;
 
   return (
-    <article className="group flex flex-col">
+    <article className="group flex flex-col transition-transform duration-300 ease-out active:scale-[0.98] sm:hover:-translate-y-1">
       <Link
         to="/producto/$id"
         params={{ id: product.id }}
-        className="relative block overflow-hidden rounded-xl bg-surface"
+        className="relative block overflow-hidden rounded-xl bg-surface shadow-sm transition-shadow duration-300 group-hover:shadow-md"
       >
         <img
           src={product.image}
           alt={product.name}
-          className="aspect-portrait w-full object-cover transition-transform duration-500 ease-out group-hover:scale-[1.03]"
+          className="aspect-portrait w-full object-cover transition-transform duration-700 ease-out group-hover:scale-[1.05]"
         />
         {product.isNew ? (
           <Badge className="absolute top-3 left-3 border-gold/40 bg-raised/90 text-gold-fg">
@@ -38,7 +38,7 @@ export function ProductCard({ product }: { product: Product }) {
           <Link
             to="/producto/$id"
             params={{ id: product.id }}
-            className="hover:text-primary transition-colors duration-150"
+            className="transition-colors duration-150 hover:text-primary"
           >
             {product.name}
           </Link>
