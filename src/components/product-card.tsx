@@ -1,6 +1,5 @@
 import { Link } from "@tanstack/react-router";
 import { Badge } from "@/components/ui/badge";
-import { AddToCartButton } from "@/components/add-to-cart-button";
 import { formatPrice } from "@/lib/format";
 import type { Product } from "@/lib/products";
 
@@ -45,19 +44,16 @@ export function ProductCard({ product }: { product: Product }) {
         </h3>
         <p className="mt-1 text-sm text-muted">{product.tagline}</p>
         <div className="mt-auto flex items-center justify-between gap-3 pt-4">
-          <p className="text-sm font-medium tabular-nums">{formatPrice(product.price)}</p>
-          <AddToCartButton
-            product={product}
-            size="sm"
-            compact
-            options={{
-              scentId: product.scentId,
-              scentName: product.scentName,
-              colorId: product.colorId,
-              colorName: product.colorName,
-              colorHex: product.colorHex,
-            }}
-          />
+          <p className="text-sm font-medium tabular-nums">
+            {formatPrice(product.price)}
+          </p>
+          <Link
+            to="/producto/$id"
+            params={{ id: product.id }}
+            className="text-sm text-primary transition-colors hover:underline"
+          >
+            {soldOut ? "Pedir a medida" : "Elegir aroma"}
+          </Link>
         </div>
       </div>
     </article>
