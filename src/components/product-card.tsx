@@ -52,7 +52,7 @@ export function ProductCard({ product }: { product: Product }) {
             params={{ id: product.id }}
             className="text-sm text-primary transition-colors hover:underline"
           >
-            {soldOut ? "Pedir a medida" : "Elegir aroma"}
+            {soldOut ? "Bajo pedido" : "Elegir aroma"}
           </Link>
         </div>
       </div>
