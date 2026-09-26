@@ -9,7 +9,7 @@ const STEPS = [
   {
     n: "01",
     title: "Elige tus velas",
-    body: "Recorre el catálogo. Filtra por forma —rosa, frappé, wax melt o decorativa— o por aroma. Abre cada pieza para ver notas, tiempo de quema y cuidado.",
+    body: "Recorre el catálogo. Filtra por forma —rosa, frappé, wax melt o decorativa— o por aroma. Abre cada pieza para ver notas, color y aroma.",
   },
   {
     n: "02",
@@ -28,13 +28,18 @@ const STEPS = [
   },
   {
     n: "05",
-    title: "Transfiere o deposita",
-    body: "Todavía no hay pago con tarjeta. El pago es por transferencia SPEI o depósito bancario, a nombre de la casa.",
+    title: "Paga",
+    body: "El pago es por transferencia SPEI, depósito bancario o pago en efectivo a contra entrega.",
   },
   {
     n: "06",
     title: "Envía el comprobante",
-    body: `Mándalo a ${STORE.email} o por WhatsApp al ${STORE.whatsapp}, con tu número de orden. En 1 a 3 días hábiles sale tu caja, a todo México.`,
+    body: `Mándalo a ${STORE.email} o por WhatsApp al ${STORE.whatsapp}, con tu número de orden. Si los productos se encuentran en stock, la entrega puede realizarse el mismo día. Si el producto está agotado de 2 a 3 días se entrega.`,
+  },
+    {
+    n: "07",
+    title: "Entrega",
+    body: `La entrega se realizará en la CDMX y área metropolitana, previamente acordado la fecha, hora y lugar de encuentro.`,
   },
 ];
 
@@ -44,11 +49,6 @@ function HowToBuy() {
       <p className="text-xs tracking-[0.22em] uppercase text-gold">El rito</p>
       <h1 className="font-display mt-2 text-headline">Cómo comprar</h1>
       <Ornament className="mt-5 justify-start" />
-      <p className="mt-4 text-muted leading-relaxed">
-        Velas Ana trabaja por pedido y transferencia. Sin pasarela, sin prisa:
-        tú eliges, nosotras preparamos cuando el depósito llega.
-      </p>
-
       <ol className="mt-12 space-y-8">
         {STEPS.map((step) => (
           <li key={step.n} className="grid grid-cols-[auto_1fr] gap-5">
