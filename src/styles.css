@@ -160,19 +160,31 @@
 }
 /* ===== Temporadas (más visibles) ===== */
 html[data-theme="muertos"] {
-  --color-primary: #5c1a24;
-  --color-primary-hover: #4a141c;
-  --color-primary-fg: #fff8f0;
-  --color-gold: #d4a84b;
-  --color-gold-hover: #c09840;
-  --color-bg: #1a1214;
-  --color-surface: #2a1c20;
-  --color-raised: #342428;
-  --color-fg: #f5ebe0;
-  --color-muted: #c4b0a0;
-  --color-subtle: #9a8878;
-  --color-border: #4a3538;
-  --color-border-strong: #5c4548;
+  /* Magenta / fucsia de papel picado */
+  --color-primary: #b91c5c;
+  --color-primary-hover: #9a174c;
+  --color-primary-fg: #fff8f5;
+
+  /* Cempasúchil */
+  --color-gold: #e8a317;
+  --color-gold-hover: #d4920f;
+  --color-gold-fg: #3a2408;
+
+  /* Mesa de ofrenda: marfil y lino */
+  --color-bg: #faf4eb;
+  --color-surface: #fff9f0;
+  --color-raised: #ffffff;
+
+  /* Texto cálido, no negro puro */
+  --color-fg: #2c1810;
+  --color-muted: #7a5c4a;
+  --color-subtle: #a08068;
+
+  /* Bordes con toque terracota */
+  --color-border: #e8d5c0;
+  --color-border-strong: #d4b898;
+  --color-rose: #e8a0b8;
+
   --font-display: "Cinzel", "Cormorant Garamond", serif;
 }
 
