@@ -9,25 +9,18 @@ import { cn } from "@/lib/utils";
 
 type CatalogSearch = {
   forma?: string;
-  aroma?: string;
-  color?: string;
   temporada?: string;
 };
 
 export const Route = createFileRoute("/catalogo")({
   validateSearch: (search: Record<string, unknown>): CatalogSearch => ({
     forma: typeof search.forma === "string" ? search.forma : undefined,
-    aroma: typeof search.aroma === "string" ? search.aroma : undefined,
-    color: typeof search.color === "string" ? search.color : undefined,
     temporada:
       typeof search.temporada === "string" ? search.temporada : undefined,
   }),
-  // Importante: re-ejecuta el loader al cambiar el search
   loaderDeps: ({ search }) => ({
     temporada: search.temporada,
     forma: search.forma,
-    aroma: search.aroma,
-    color: search.color,
   }),
   loader: () => listCatalog(),
   component: CatalogPage,
@@ -59,11 +52,10 @@ function Chip({
 }
 
 function CatalogPage() {
-  const { forma, aroma, color, temporada } = Route.useSearch();
+  const { forma, temporada } = Route.useSearch();
   const navigate = Route.useNavigate();
-  const { products, scents, colors } = Route.useLoaderData();
+  const { products } = Route.useLoaderData();
 
-  // Filtro de campaña en cliente → actualiza al instante sin F5
   const [campaignTitle, setCampaignTitle] = useState<string | null>(null);
   const [campaignProductIds, setCampaignProductIds] = useState<string[] | null>(
     null,
@@ -97,18 +89,9 @@ function CatalogPage() {
         return false;
       }
       if (forma && product.shape !== forma) return false;
-      if (aroma && product.scentId !== aroma) return false;
-      if (color && product.colorId !== color) return false;
       return true;
     });
-  }, [products, campaignProductIds, forma, aroma, color]);
-
-  const usedScents = new Set(products.map((p) => p.scentId));
-  const usedColors = new Set(products.map((p) => p.colorId));
-
-  function searchBase(extra: Partial<CatalogSearch> = {}) {
-    return { forma, aroma, color, temporada, ...extra };
-  }
+  }, [products, campaignProductIds, forma]);
 
   return (
     <main className="mx-auto max-w-6xl px-4 py-12 sm:px-6">
@@ -122,7 +105,7 @@ function CatalogPage() {
       <p className="mt-4 max-w-xl text-muted">
         {campaignTitle
           ? "Solo las piezas de la campaña activa. Puedes limpiar el filtro para ver todo el catálogo."
-          : "Filtra por forma, aroma o color. Todas las piezas se hacen por lote pequeño y se reservan al confirmar la transferencia."}
+          : "Filtra por forma. Todas las piezas se hacen por lote pequeño y se reservan al confirmar la transferencia."}
       </p>
 
       {temporada ? (
@@ -131,7 +114,7 @@ function CatalogPage() {
           className="mt-4 text-sm text-primary underline-offset-2 hover:underline"
           onClick={() =>
             navigate({
-              search: { forma, aroma, color, temporada: undefined },
+              search: { forma, temporada: undefined },
             })
           }
         >
@@ -139,100 +122,35 @@ function CatalogPage() {
         </button>
       ) : null}
 
-      <div className="mt-10 space-y-5">
-        <div>
-          <p className="mb-2 text-xs tracking-[0.16em] uppercase text-subtle">
-            Forma
-          </p>
-          <div className="flex flex-wrap gap-2">
+      <div className="mt-10">
+        <p className="mb-2 text-xs tracking-[0.16em] uppercase text-subtle">
+          Forma
+        </p>
+        <div className="flex flex-wrap gap-2">
+          <Chip
+            active={!forma}
+            onClick={() =>
+              navigate({ search: { forma: undefined, temporada } })
+            }
+          >
+            Todas
+          </Chip>
+          {SHAPES.map((shape) => (
             <Chip
-              active={!forma}
+              key={shape.id}
+              active={forma === shape.id}
               onClick={() =>
-                navigate({ search: searchBase({ forma: undefined }) })
+                navigate({
+                  search: {
+                    forma: forma === shape.id ? undefined : shape.id,
+                    temporada,
+                  },
+                })
               }
             >
-              Todas
+              {shape.label}
             </Chip>
-            {SHAPES.map((shape) => (
-              <Chip
-                key={shape.id}
-                active={forma === shape.id}
-                onClick={() =>
-                  navigate({
-                    search: searchBase({
-                      forma: forma === shape.id ? undefined : shape.id,
-                    }),
-                  })
-                }
-              >
-                {shape.label}
-              </Chip>
-            ))}
-          </div>
-        </div>
-        <div>
-          <p className="mb-2 text-xs tracking-[0.16em] uppercase text-subtle">
-            Aroma
-          </p>
-          <div className="flex flex-wrap gap-2">
-            <Chip
-              active={!aroma}
-              onClick={() =>
-                navigate({ search: searchBase({ aroma: undefined }) })
-              }
-            >
-              Todos
-            </Chip>
-            {scents
-              .filter((scent) => usedScents.has(scent.id))
-              .map((scent) => (
-                <Chip
-                  key={scent.id}
-                  active={aroma === scent.id}
-                  onClick={() =>
-                    navigate({
-                      search: searchBase({
-                        aroma: aroma === scent.id ? undefined : scent.id,
-                      }),
-                    })
-                  }
-                >
-                  {scent.name}
-                </Chip>
-              ))}
-          </div>
-        </div>
-        <div>
-          <p className="mb-2 text-xs tracking-[0.16em] uppercase text-subtle">
-            Color
-          </p>
-          <div className="flex flex-wrap gap-2">
-            <Chip
-              active={!color}
-              onClick={() =>
-                navigate({ search: searchBase({ color: undefined }) })
-              }
-            >
-              Todos
-            </Chip>
-            {colors
-              .filter((item) => usedColors.has(item.id))
-              .map((item) => (
-                <Chip
-                  key={item.id}
-                  active={color === item.id}
-                  onClick={() =>
-                    navigate({
-                      search: searchBase({
-                        color: color === item.id ? undefined : item.id,
-                      }),
-                    })
-                  }
-                >
-                  {item.name}
-                </Chip>
-              ))}
-          </div>
+          ))}
         </div>
       </div>
 
@@ -242,8 +160,7 @@ function CatalogPage() {
 
       {filtered.length === 0 ? (
         <p className="mt-10 text-muted">
-          No hay piezas con esa combinación. Prueba otro aroma o limpia los
-          filtros.
+          No hay piezas con esa forma. Prueba otra o limpia el filtro.
         </p>
       ) : (
         <div className="mt-8 grid gap-x-6 gap-y-12 sm:grid-cols-2 lg:grid-cols-3">
@@ -254,4 +171,4 @@ function CatalogPage() {
       )}
     </main>
   );
-}
+  }
