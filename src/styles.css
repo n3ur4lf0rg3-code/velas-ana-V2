@@ -158,54 +158,78 @@
     animation: none;
   }
 }
-
-/* ===== Temporadas (html[data-theme]) ===== */
+/* ===== Temporadas (más visibles) ===== */
 html[data-theme="muertos"] {
-  --color-primary: #6b2d3c;
-  --color-primary-hover: #5a2432;
-  --color-gold: #c4a35a;
-  --color-gold-hover: #b0894a;
-  --color-bg: #f3ebe3;
-  --color-surface: #f8f0e6;
-  --color-raised: #fdf6ee;
+  --color-primary: #5c1a24;
+  --color-primary-hover: #4a141c;
+  --color-primary-fg: #fff8f0;
+  --color-gold: #d4a84b;
+  --color-gold-hover: #c09840;
+  --color-bg: #1a1214;
+  --color-surface: #2a1c20;
+  --color-raised: #342428;
+  --color-fg: #f5ebe0;
+  --color-muted: #c4b0a0;
+  --color-subtle: #9a8878;
+  --color-border: #4a3538;
+  --color-border-strong: #5c4548;
   --font-display: "Cinzel", "Cormorant Garamond", serif;
 }
 
 html[data-theme="halloween"] {
-  --color-primary: #c45c1a;
-  --color-primary-hover: #a34a14;
-  --color-gold: #e8a020;
-  --color-gold-hover: #d09018;
-  --color-bg: #f5efe6;
-  --color-surface: #faf4ea;
-  --color-raised: #fff8ee;
+  --color-primary: #e85d04;
+  --color-primary-hover: #d00000;
+  --color-primary-fg: #1a1008;
+  --color-gold: #ffba08;
+  --color-gold-hover: #faa307;
+  --color-bg: #1a1208;
+  --color-surface: #2b1d0e;
+  --color-raised: #3d2a14;
+  --color-fg: #fff3e0;
+  --color-muted: #d4b896;
+  --color-subtle: #a89070;
+  --color-border: #5c4020;
+  --color-border-strong: #7a5630;
   --font-display: "Oswald", "Outfit", sans-serif;
 }
 
 html[data-theme="navidad"] {
-  --color-primary: #8b1e2d;
-  --color-primary-hover: #6f1724;
-  --color-gold: #c9a227;
-  --color-gold-hover: #b89120;
-  --color-bg: #f6efe8;
-  --color-surface: #fbf6f0;
-  --color-raised: #fffaf5;
+  --color-primary: #9b1b1e;
+  --color-primary-hover: #7a1518;
+  --color-primary-fg: #fff8f0;
+  --color-gold: #d4af37;
+  --color-gold-hover: #c9a227;
+  --color-bg: #0f1a12;
+  --color-surface: #1a2e1f;
+  --color-raised: #243d2a;
+  --color-fg: #f0f5f0;
+  --color-muted: #a8c0a8;
+  --color-subtle: #7a947a;
+  --color-border: #2d4a32;
+  --color-border-strong: #3d5c42;
   --font-display: "Playfair Display", "Cormorant Garamond", serif;
 }
 
 html[data-theme="madres"] {
-  --color-primary: #a65d7a;
-  --color-primary-hover: #8f4d68;
-  --color-gold: #d4a0b0;
-  --color-gold-hover: #c490a0;
-  --color-bg: #f8f0f2;
-  --color-surface: #fcf6f8;
-  --color-raised: #fff9fb;
+  --color-primary: #c45c7a;
+  --color-primary-hover: #a84d68;
+  --color-primary-fg: #fff8fb;
+  --color-gold: #e8a0b8;
+  --color-gold-hover: #d890a8;
+  --color-bg: #fdf2f5;
+  --color-surface: #fff0f5;
+  --color-raised: #ffffff;
+  --color-fg: #4a2030;
+  --color-muted: #8a6070;
+  --color-subtle: #b08898;
+  --color-border: #f0d0dc;
+  --color-border-strong: #e0b0c0;
   --font-display: "Great Vibes", "Cormorant Garamond", cursive;
 }
 
 html[data-theme] body {
-  background-color: var(--color-bg);
+  background-color: var(--color-bg) !important;
+  color: var(--color-fg);
   font-family: var(--font-sans);
 }
 
@@ -214,13 +238,16 @@ html[data-theme] h2,
 html[data-theme] h3,
 html[data-theme] h4,
 html[data-theme] .font-display {
-  font-family: var(--font-display);
+  font-family: var(--font-display) !important;
+  color: var(--color-fg);
 }
 
 .seasonal-banner {
   background: linear-gradient(
     90deg,
-    color-mix(in srgb, var(--color-primary) 18%, transparent),
-    color-mix(in srgb, var(--color-gold) 24%, transparent)
+    color-mix(in srgb, var(--color-primary) 35%, transparent),
+    color-mix(in srgb, var(--color-gold) 30%, transparent)
   );
+  color: var(--color-fg);
+  border-color: var(--color-border) !important;
 }
