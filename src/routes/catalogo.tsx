@@ -1,3 +1,4 @@
+import { useEffect, useMemo, useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import { Ornament } from "@/components/ornament";
 import { ProductCard } from "@/components/product-card";
@@ -18,26 +19,17 @@ export const Route = createFileRoute("/catalogo")({
     forma: typeof search.forma === "string" ? search.forma : undefined,
     aroma: typeof search.aroma === "string" ? search.aroma : undefined,
     color: typeof search.color === "string" ? search.color : undefined,
-    temporada: typeof search.temporada === "string" ? search.temporada : undefined,
+    temporada:
+      typeof search.temporada === "string" ? search.temporada : undefined,
   }),
-  loader: async ({ location }) => {
-    const search = location.search as CatalogSearch;
-    const [catalog, active] = await Promise.all([
-      listCatalog(),
-      getActiveCampaign(),
-    ]);
-    const campaignIds =
-      search.temporada &&
-      active.campaign &&
-      active.campaign.slug === search.temporada
-        ? active.campaign.productIds
-        : null;
-    return {
-      ...catalog,
-      campaignTitle: campaignIds ? active.campaign?.title ?? null : null,
-      campaignProductIds: campaignIds,
-    };
-  },
+  // Importante: re-ejecuta el loader al cambiar el search
+  loaderDeps: ({ search }) => ({
+    temporada: search.temporada,
+    forma: search.forma,
+    aroma: search.aroma,
+    color: search.color,
+  }),
+  loader: () => listCatalog(),
   component: CatalogPage,
 });
 
@@ -69,30 +61,53 @@ function Chip({
 function CatalogPage() {
   const { forma, aroma, color, temporada } = Route.useSearch();
   const navigate = Route.useNavigate();
-  const { products, scents, colors, campaignTitle, campaignProductIds } =
-    Route.useLoaderData();
+  const { products, scents, colors } = Route.useLoaderData();
 
-  const filtered = products.filter((product) => {
-    if (campaignProductIds && !campaignProductIds.includes(product.id)) {
-      return false;
+  // Filtro de campaña en cliente → actualiza al instante sin F5
+  const [campaignTitle, setCampaignTitle] = useState<string | null>(null);
+  const [campaignProductIds, setCampaignProductIds] = useState<string[] | null>(
+    null,
+  );
+
+  useEffect(() => {
+    if (!temporada) {
+      setCampaignTitle(null);
+      setCampaignProductIds(null);
+      return;
     }
-    if (forma && product.shape !== forma) return false;
-    if (aroma && product.scentId !== aroma) return false;
-    if (color && product.colorId !== color) return false;
-    return true;
-  });
+    let cancelled = false;
+    void getActiveCampaign().then(({ campaign }) => {
+      if (cancelled) return;
+      if (campaign && campaign.slug === temporada) {
+        setCampaignTitle(campaign.title);
+        setCampaignProductIds(campaign.productIds);
+      } else {
+        setCampaignTitle(null);
+        setCampaignProductIds(null);
+      }
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [temporada]);
+
+  const filtered = useMemo(() => {
+    return products.filter((product) => {
+      if (campaignProductIds && !campaignProductIds.includes(product.id)) {
+        return false;
+      }
+      if (forma && product.shape !== forma) return false;
+      if (aroma && product.scentId !== aroma) return false;
+      if (color && product.colorId !== color) return false;
+      return true;
+    });
+  }, [products, campaignProductIds, forma, aroma, color]);
 
   const usedScents = new Set(products.map((p) => p.scentId));
   const usedColors = new Set(products.map((p) => p.colorId));
 
   function searchBase(extra: Partial<CatalogSearch> = {}) {
-    return {
-      forma,
-      aroma,
-      color,
-      temporada,
-      ...extra,
-    };
+    return { forma, aroma, color, temporada, ...extra };
   }
 
   return (
@@ -115,7 +130,9 @@ function CatalogPage() {
           type="button"
           className="mt-4 text-sm text-primary underline-offset-2 hover:underline"
           onClick={() =>
-            navigate({ search: { forma, aroma, color, temporada: undefined } })
+            navigate({
+              search: { forma, aroma, color, temporada: undefined },
+            })
           }
         >
           Ver todo el catálogo
@@ -124,11 +141,15 @@ function CatalogPage() {
 
       <div className="mt-10 space-y-5">
         <div>
-          <p className="mb-2 text-xs tracking-[0.16em] uppercase text-subtle">Forma</p>
+          <p className="mb-2 text-xs tracking-[0.16em] uppercase text-subtle">
+            Forma
+          </p>
           <div className="flex flex-wrap gap-2">
             <Chip
               active={!forma}
-              onClick={() => navigate({ search: searchBase({ forma: undefined }) })}
+              onClick={() =>
+                navigate({ search: searchBase({ forma: undefined }) })
+              }
             >
               Todas
             </Chip>
@@ -150,11 +171,15 @@ function CatalogPage() {
           </div>
         </div>
         <div>
-          <p className="mb-2 text-xs tracking-[0.16em] uppercase text-subtle">Aroma</p>
+          <p className="mb-2 text-xs tracking-[0.16em] uppercase text-subtle">
+            Aroma
+          </p>
           <div className="flex flex-wrap gap-2">
             <Chip
               active={!aroma}
-              onClick={() => navigate({ search: searchBase({ aroma: undefined }) })}
+              onClick={() =>
+                navigate({ search: searchBase({ aroma: undefined }) })
+              }
             >
               Todos
             </Chip>
@@ -178,11 +203,15 @@ function CatalogPage() {
           </div>
         </div>
         <div>
-          <p className="mb-2 text-xs tracking-[0.16em] uppercase text-subtle">Color</p>
+          <p className="mb-2 text-xs tracking-[0.16em] uppercase text-subtle">
+            Color
+          </p>
           <div className="flex flex-wrap gap-2">
             <Chip
               active={!color}
-              onClick={() => navigate({ search: searchBase({ color: undefined }) })}
+              onClick={() =>
+                navigate({ search: searchBase({ color: undefined }) })
+              }
             >
               Todos
             </Chip>
@@ -213,7 +242,8 @@ function CatalogPage() {
 
       {filtered.length === 0 ? (
         <p className="mt-10 text-muted">
-          No hay piezas con esa combinación. Prueba otro aroma o limpia los filtros.
+          No hay piezas con esa combinación. Prueba otro aroma o limpia los
+          filtros.
         </p>
       ) : (
         <div className="mt-8 grid gap-x-6 gap-y-12 sm:grid-cols-2 lg:grid-cols-3">

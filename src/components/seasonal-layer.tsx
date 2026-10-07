@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Link } from "@tanstack/react-router";
+import { Link, useRouterState } from "@tanstack/react-router";
 import { X } from "lucide-react";
 import { getActiveCampaign, type Campaign } from "@/lib/campaign-api";
 import { formatPrice } from "@/lib/format";
@@ -7,12 +7,33 @@ import type { Product } from "@/lib/products";
 import { Button } from "@/components/ui/button";
 
 const STORAGE_KEY = "va-campaign-dismissed";
+const THEME_ATTR = "data-theme";
+
+function clearTheme() {
+  document.documentElement.removeAttribute(THEME_ATTR);
+  document.body.classList.forEach((cls) => {
+    if (cls.startsWith("theme-")) document.body.classList.remove(cls);
+  });
+}
+
+function applyTheme(theme: string) {
+  document.documentElement.setAttribute(THEME_ATTR, theme);
+  document.body.classList.forEach((cls) => {
+    if (cls.startsWith("theme-")) document.body.classList.remove(cls);
+  });
+  document.body.classList.add(`theme-${theme}`);
+}
 
 export function SeasonalLayer() {
+  const pathname = useRouterState({ select: (s) => s.location.pathname });
+  const isAdminArea =
+    pathname.startsWith("/admin") || pathname.startsWith("/login");
+
   const [campaign, setCampaign] = useState<Campaign | null>(null);
   const [products, setProducts] = useState<Product[]>([]);
   const [popupOpen, setPopupOpen] = useState(false);
 
+  // Carga campaña una vez
   useEffect(() => {
     let cancelled = false;
     void getActiveCampaign()
@@ -20,28 +41,29 @@ export function SeasonalLayer() {
         if (cancelled) return;
         setCampaign(c);
         setProducts(p);
-        if (c) {
-          // Quita temas previos y aplica el actual
-          document.body.classList.forEach((cls) => {
-            if (cls.startsWith("theme-")) document.body.classList.remove(cls);
-          });
-          document.body.classList.add(`theme-${c.theme}`);
-          if (c.showPopup) {
-            const dismissed = sessionStorage.getItem(`${STORAGE_KEY}:${c.id}`);
-            if (!dismissed) setPopupOpen(true);
-          }
+        if (c?.showPopup) {
+          const dismissed = sessionStorage.getItem(`${STORAGE_KEY}:${c.id}`);
+          if (!dismissed) setPopupOpen(true);
         }
       })
-      .catch(() => {
-        /* sin campaña o tabla aún no migrada */
-      });
-
+      .catch(() => {});
     return () => {
       cancelled = true;
-      document.body.classList.forEach((cls) => {
-        if (cls.startsWith("theme-")) document.body.classList.remove(cls);
-      });
     };
+  }, []);
+
+  // Aplica / quita tema según ruta (admin y login sin tema)
+  useEffect(() => {
+    if (isAdminArea || !campaign) {
+      clearTheme();
+      return;
+    }
+    applyTheme(campaign.theme);
+  }, [campaign, isAdminArea]);
+
+  // Limpieza al desmontar
+  useEffect(() => {
+    return () => clearTheme();
   }, []);
 
   function dismissPopup() {
@@ -51,9 +73,9 @@ export function SeasonalLayer() {
     setPopupOpen(false);
   }
 
-  if (!campaign) return null;
+  // En admin no mostramos banner ni popup
+  if (!campaign || isAdminArea) return null;
 
-  // Siempre al catálogo filtrado por esta campaña
   const catalogSearch = { temporada: campaign.slug };
 
   return (

@@ -118,52 +118,7 @@
     animation: cart-pop 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
   }
 
-  /* --- Temporadas: color + tipografía --- */
-  .theme-muertos {
-    --color-primary: #6b2d3c;
-    --color-primary-hover: #5a2432;
-    --color-gold: #c4a35a;
-    --color-bg: #f3ebe3;
-    --color-surface: #f8f0e6;
-    --font-display: "Cinzel", "Cormorant Garamond", serif;
-  }
-
-  .theme-halloween {
-    --color-primary: #c45c1a;
-    --color-primary-hover: #a34a14;
-    --color-gold: #f0a830;
-    --color-bg: #f5efe6;
-    --color-surface: #faf4ea;
-    --font-display: "Oswald", "Outfit", sans-serif;
-  }
-
-  .theme-navidad {
-    --color-primary: #8b1e2d;
-    --color-primary-hover: #6f1724;
-    --color-gold: #c9a227;
-    --color-bg: #f6efe8;
-    --color-surface: #fbf6f0;
-    --font-display: "Playfair Display", "Cormorant Garamond", serif;
-  }
-
-  .theme-madres {
-    --color-primary: #a65d7a;
-    --color-primary-hover: #8f4d68;
-    --color-gold: #d4a0b0;
-    --color-bg: #f8f0f2;
-    --color-surface: #fcf6f8;
-    --font-display: "Great Vibes", "Cormorant Garamond", cursive;
-  }
-
-  .seasonal-banner {
-    background: linear-gradient(
-      90deg,
-      color-mix(in srgb, var(--color-primary) 16%, transparent),
-      color-mix(in srgb, var(--color-gold) 22%, transparent)
-    );
-  }
-}
-
+ 
 @keyframes ken-burns {
   from {
     transform: scale(1);
@@ -202,4 +157,69 @@
   .ken-burns {
     animation: none;
   }
+}
+/* ===== Temporadas (aplican a todo el sitio vía html[data-theme]) ===== */
+html[data-theme="muertos"] {
+  --color-primary: #6b2d3c;
+  --color-primary-hover: #5a2432;
+  --color-gold: #c4a35a;
+  --color-gold-hover: #b0894a;
+  --color-bg: #f3ebe3;
+  --color-surface: #f8f0e6;
+  --color-raised: #fdf6ee;
+  --font-display: "Cinzel", "Cormorant Garamond", serif;
+}
+
+html[data-theme="halloween"] {
+  --color-primary: #c45c1a;
+  --color-primary-hover: #a34a14;
+  --color-gold: #e8a020;
+  --color-gold-hover: #d09018;
+  --color-bg: #f5efe6;
+  --color-surface: #faf4ea;
+  --color-raised: #fff8ee;
+  --font-display: "Oswald", "Outfit", sans-serif;
+}
+
+html[data-theme="navidad"] {
+  --color-primary: #8b1e2d;
+  --color-primary-hover: #6f1724;
+  --color-gold: #c9a227;
+  --color-gold-hover: #b89120;
+  --color-bg: #f6efe8;
+  --color-surface: #fbf6f0;
+  --color-raised: #fffaf5;
+  --font-display: "Playfair Display", "Cormorant Garamond", serif;
+}
+
+html[data-theme="madres"] {
+  --color-primary: #a65d7a;
+  --color-primary-hover: #8f4d68;
+  --color-gold: #d4a0b0;
+  --color-gold-hover: #c490a0;
+  --color-bg: #f8f0f2;
+  --color-surface: #fcf6f8;
+  --color-raised: #fff9fb;
+  --font-display: "Great Vibes", "Cormorant Garamond", cursive;
+}
+
+html[data-theme] body {
+  background-color: var(--color-bg);
+  font-family: var(--font-sans);
+}
+
+html[data-theme] h1,
+html[data-theme] h2,
+html[data-theme] h3,
+html[data-theme] h4,
+html[data-theme] .font-display {
+  font-family: var(--font-display);
+}
+
+.seasonal-banner {
+  background: linear-gradient(
+    90deg,
+    color-mix(in srgb, var(--color-primary) 18%, transparent),
+    color-mix(in srgb, var(--color-gold) 24%, transparent)
+  );
 }
