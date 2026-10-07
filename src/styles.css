@@ -117,6 +117,51 @@
   .cart-badge-pop {
     animation: cart-pop 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
   }
+
+  /* --- Temporadas: color + tipografía --- */
+  .theme-muertos {
+    --color-primary: #6b2d3c;
+    --color-primary-hover: #5a2432;
+    --color-gold: #c4a35a;
+    --color-bg: #f3ebe3;
+    --color-surface: #f8f0e6;
+    --font-display: "Cinzel", "Cormorant Garamond", serif;
+  }
+
+  .theme-halloween {
+    --color-primary: #c45c1a;
+    --color-primary-hover: #a34a14;
+    --color-gold: #f0a830;
+    --color-bg: #f5efe6;
+    --color-surface: #faf4ea;
+    --font-display: "Oswald", "Outfit", sans-serif;
+  }
+
+  .theme-navidad {
+    --color-primary: #8b1e2d;
+    --color-primary-hover: #6f1724;
+    --color-gold: #c9a227;
+    --color-bg: #f6efe8;
+    --color-surface: #fbf6f0;
+    --font-display: "Playfair Display", "Cormorant Garamond", serif;
+  }
+
+  .theme-madres {
+    --color-primary: #a65d7a;
+    --color-primary-hover: #8f4d68;
+    --color-gold: #d4a0b0;
+    --color-bg: #f8f0f2;
+    --color-surface: #fcf6f8;
+    --font-display: "Great Vibes", "Cormorant Garamond", cursive;
+  }
+
+  .seasonal-banner {
+    background: linear-gradient(
+      90deg,
+      color-mix(in srgb, var(--color-primary) 16%, transparent),
+      color-mix(in srgb, var(--color-gold) 22%, transparent)
+    );
+  }
 }
 
 @keyframes ken-burns {
@@ -156,34 +201,5 @@
 
   .ken-burns {
     animation: none;
-  }
-    /* --- Temporadas --- */
-  .theme-muertos {
-    --color-primary: #6b2d3c;
-    --color-primary-hover: #5a2432;
-    --color-gold: #c4a35a;
-  }
-  .theme-halloween {
-    --color-primary: #c45c1a;
-    --color-primary-hover: #a34a14;
-    --color-gold: #f0a830;
-  }
-  .theme-navidad {
-    --color-primary: #8b1e2d;
-    --color-primary-hover: #6f1724;
-    --color-gold: #c9a227;
-  }
-  .theme-madres {
-    --color-primary: #a65d7a;
-    --color-primary-hover: #8f4d68;
-    --color-gold: #d4a0b0;
-  }
-
-  .seasonal-banner {
-    background: linear-gradient(
-      90deg,
-      color-mix(in srgb, var(--color-primary) 14%, transparent),
-      color-mix(in srgb, var(--color-gold) 20%, transparent)
-    );
   }
 }

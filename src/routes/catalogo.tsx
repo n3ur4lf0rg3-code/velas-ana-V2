@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { Ornament } from "@/components/ornament";
 import { ProductCard } from "@/components/product-card";
+import { getActiveCampaign } from "@/lib/campaign-api";
 import { listCatalog } from "@/lib/catalog-api";
 import { SHAPES } from "@/lib/products";
 import { cn } from "@/lib/utils";
@@ -9,6 +10,7 @@ type CatalogSearch = {
   forma?: string;
   aroma?: string;
   color?: string;
+  temporada?: string;
 };
 
 export const Route = createFileRoute("/catalogo")({
@@ -16,8 +18,26 @@ export const Route = createFileRoute("/catalogo")({
     forma: typeof search.forma === "string" ? search.forma : undefined,
     aroma: typeof search.aroma === "string" ? search.aroma : undefined,
     color: typeof search.color === "string" ? search.color : undefined,
+    temporada: typeof search.temporada === "string" ? search.temporada : undefined,
   }),
-  loader: () => listCatalog(),
+  loader: async ({ location }) => {
+    const search = location.search as CatalogSearch;
+    const [catalog, active] = await Promise.all([
+      listCatalog(),
+      getActiveCampaign(),
+    ]);
+    const campaignIds =
+      search.temporada &&
+      active.campaign &&
+      active.campaign.slug === search.temporada
+        ? active.campaign.productIds
+        : null;
+    return {
+      ...catalog,
+      campaignTitle: campaignIds ? active.campaign?.title ?? null : null,
+      campaignProductIds: campaignIds,
+    };
+  },
   component: CatalogPage,
 });
 
@@ -47,11 +67,15 @@ function Chip({
 }
 
 function CatalogPage() {
-  const { forma, aroma, color } = Route.useSearch();
+  const { forma, aroma, color, temporada } = Route.useSearch();
   const navigate = Route.useNavigate();
-  const { products, scents, colors } = Route.useLoaderData();
+  const { products, scents, colors, campaignTitle, campaignProductIds } =
+    Route.useLoaderData();
 
   const filtered = products.filter((product) => {
+    if (campaignProductIds && !campaignProductIds.includes(product.id)) {
+      return false;
+    }
     if (forma && product.shape !== forma) return false;
     if (aroma && product.scentId !== aroma) return false;
     if (color && product.colorId !== color) return false;
@@ -61,15 +85,42 @@ function CatalogPage() {
   const usedScents = new Set(products.map((p) => p.scentId));
   const usedColors = new Set(products.map((p) => p.colorId));
 
+  function searchBase(extra: Partial<CatalogSearch> = {}) {
+    return {
+      forma,
+      aroma,
+      color,
+      temporada,
+      ...extra,
+    };
+  }
+
   return (
     <main className="mx-auto max-w-6xl px-4 py-12 sm:px-6">
-      <p className="text-xs tracking-[0.22em] uppercase text-gold">Colección</p>
-      <h1 className="font-display mt-2 text-headline">El catálogo</h1>
+      <p className="text-xs tracking-[0.22em] uppercase text-gold">
+        {campaignTitle ? "Temporada" : "Colección"}
+      </p>
+      <h1 className="font-display mt-2 text-headline">
+        {campaignTitle ?? "El catálogo"}
+      </h1>
       <Ornament className="mt-5 justify-start" />
       <p className="mt-4 max-w-xl text-muted">
-        Filtra por forma, aroma o color. Todas las piezas se hacen por lote pequeño
-        y se reservan al confirmar la transferencia.
+        {campaignTitle
+          ? "Solo las piezas de la campaña activa. Puedes limpiar el filtro para ver todo el catálogo."
+          : "Filtra por forma, aroma o color. Todas las piezas se hacen por lote pequeño y se reservan al confirmar la transferencia."}
       </p>
+
+      {temporada ? (
+        <button
+          type="button"
+          className="mt-4 text-sm text-primary underline-offset-2 hover:underline"
+          onClick={() =>
+            navigate({ search: { forma, aroma, color, temporada: undefined } })
+          }
+        >
+          Ver todo el catálogo
+        </button>
+      ) : null}
 
       <div className="mt-10 space-y-5">
         <div>
@@ -77,7 +128,7 @@ function CatalogPage() {
           <div className="flex flex-wrap gap-2">
             <Chip
               active={!forma}
-              onClick={() => navigate({ search: { forma: undefined, aroma, color } })}
+              onClick={() => navigate({ search: searchBase({ forma: undefined }) })}
             >
               Todas
             </Chip>
@@ -87,11 +138,9 @@ function CatalogPage() {
                 active={forma === shape.id}
                 onClick={() =>
                   navigate({
-                    search: {
+                    search: searchBase({
                       forma: forma === shape.id ? undefined : shape.id,
-                      aroma,
-                      color,
-                    },
+                    }),
                   })
                 }
               >
@@ -105,7 +154,7 @@ function CatalogPage() {
           <div className="flex flex-wrap gap-2">
             <Chip
               active={!aroma}
-              onClick={() => navigate({ search: { forma, aroma: undefined, color } })}
+              onClick={() => navigate({ search: searchBase({ aroma: undefined }) })}
             >
               Todos
             </Chip>
@@ -117,11 +166,9 @@ function CatalogPage() {
                   active={aroma === scent.id}
                   onClick={() =>
                     navigate({
-                      search: {
-                        forma,
+                      search: searchBase({
                         aroma: aroma === scent.id ? undefined : scent.id,
-                        color,
-                      },
+                      }),
                     })
                   }
                 >
@@ -135,7 +182,7 @@ function CatalogPage() {
           <div className="flex flex-wrap gap-2">
             <Chip
               active={!color}
-              onClick={() => navigate({ search: { forma, aroma, color: undefined } })}
+              onClick={() => navigate({ search: searchBase({ color: undefined }) })}
             >
               Todos
             </Chip>
@@ -147,11 +194,9 @@ function CatalogPage() {
                   active={color === item.id}
                   onClick={() =>
                     navigate({
-                      search: {
-                        forma,
-                        aroma,
+                      search: searchBase({
                         color: color === item.id ? undefined : item.id,
-                      },
+                      }),
                     })
                   }
                 >

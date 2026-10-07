@@ -21,6 +21,10 @@ export function SeasonalLayer() {
         setCampaign(c);
         setProducts(p);
         if (c) {
+          // Quita temas previos y aplica el actual
+          document.body.classList.forEach((cls) => {
+            if (cls.startsWith("theme-")) document.body.classList.remove(cls);
+          });
           document.body.classList.add(`theme-${c.theme}`);
           if (c.showPopup) {
             const dismissed = sessionStorage.getItem(`${STORAGE_KEY}:${c.id}`);
@@ -34,10 +38,9 @@ export function SeasonalLayer() {
 
     return () => {
       cancelled = true;
-      document.body.className = document.body.className
-        .split(/\s+/)
-        .filter((x) => x && !x.startsWith("theme-"))
-        .join(" ");
+      document.body.classList.forEach((cls) => {
+        if (cls.startsWith("theme-")) document.body.classList.remove(cls);
+      });
     };
   }, []);
 
@@ -50,7 +53,8 @@ export function SeasonalLayer() {
 
   if (!campaign) return null;
 
-  const href = campaign.ctaHref.startsWith("/") ? campaign.ctaHref : "/catalogo";
+  // Siempre al catálogo filtrado por esta campaña
+  const catalogSearch = { temporada: campaign.slug };
 
   return (
     <>
@@ -60,7 +64,11 @@ export function SeasonalLayer() {
           {campaign.subtitle ? (
             <span className="text-muted"> — {campaign.subtitle}</span>
           ) : null}{" "}
-          <Link to={href} className="text-primary underline-offset-2 hover:underline">
+          <Link
+            to="/catalogo"
+            search={catalogSearch}
+            className="text-primary underline-offset-2 hover:underline"
+          >
             {campaign.ctaLabel}
           </Link>
         </div>
@@ -126,7 +134,7 @@ export function SeasonalLayer() {
 
             <div className="mt-6 flex flex-col gap-2 sm:flex-row">
               <Button asChild className="flex-1">
-                <Link to={href} onClick={dismissPopup}>
+                <Link to="/catalogo" search={catalogSearch} onClick={dismissPopup}>
                   {campaign.ctaLabel}
                 </Link>
               </Button>
