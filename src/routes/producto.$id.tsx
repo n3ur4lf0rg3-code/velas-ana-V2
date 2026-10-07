@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { Clock, Flame, Search, Weight } from "lucide-react";
+import { Clock, Search } from "lucide-react";
 import { AddToCartButton } from "@/components/add-to-cart-button";
 import { EmptyState } from "@/components/empty-state";
 import { ProductCard } from "@/components/product-card";
@@ -106,7 +106,7 @@ function ProductPage() {
   };
 
   return (
-    <main className="mx-auto max-w-6xl px-4 py-10 sm:px-6">
+    <main className="mx-auto max-w-6xl px-4 py-10 pb-28 sm:px-6 lg:pb-10">
       <p className="text-sm text-muted">
         <Link to="/catalogo" className="hover:text-primary">
           Catálogo
@@ -237,21 +237,7 @@ function ProductPage() {
             ))}
           </ul>
 
-          <dl className="mt-8 grid grid-cols-3 gap-3 text-sm">
-            <div className="rounded-lg border border-border bg-raised px-3 py-3">
-              <dt className="flex items-center gap-1.5 text-subtle">
-                <Flame className="size-3.5" />
-                Quema
-              </dt>
-              <dd className="mt-1">{product.burnHours}</dd>
-            </div>
-            <div className="rounded-lg border border-border bg-raised px-3 py-3">
-              <dt className="flex items-center gap-1.5 text-subtle">
-                <Weight className="size-3.5" />
-                Peso
-              </dt>
-              <dd className="mt-1">{product.weight}</dd>
-            </div>
+          <dl className="mt-8 grid grid-cols-1 gap-3 text-sm sm:max-w-xs">
             <div className="rounded-lg border border-border bg-raised px-3 py-3">
               <dt className="flex items-center gap-1.5 text-subtle">
                 <Clock className="size-3.5" />
@@ -289,6 +275,24 @@ function ProductPage() {
           </div>
         </section>
       ) : null}
+      {/* Barra fija móvil */}
+	<div className="fixed inset-x-0 bottom-0 z-30 border-t border-border bg-bg/95 p-3 backdrop-blur-md lg:hidden">
+	  <div className="mx-auto flex max-w-6xl items-center gap-3">
+	    <div className="min-w-0 flex-1">
+	      <p className="truncate text-sm font-medium">{product.name}</p>
+	      <p className="truncate text-xs text-muted">
+		{options.scentName} · {options.colorName} · {formatPrice(product.price)}
+	      </p>
+	    </div>
+	    <AddToCartButton
+	      product={product}
+	      quantity={quantity}
+	      options={options}
+	      size="md"
+	      className="shrink-0"
+	    />
+	  </div>
+	</div>
     </main>
   );
 }

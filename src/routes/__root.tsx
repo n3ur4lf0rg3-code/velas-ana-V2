@@ -3,6 +3,7 @@ import { Toaster } from "sonner";
 import { AuthProvider } from "@/lib/auth/provider";
 import { PreviewHostBridge } from "@/components/preview-host-bridge";
 import { CartHydration } from "@/components/cart-hydration";
+import { SeasonalLayer } from "@/components/seasonal-layer";
 import { SiteHeader } from "@/components/site-header";
 import { SiteFooter } from "@/components/site-footer";
 import { Button } from "@/components/ui/button";
@@ -56,6 +57,7 @@ function RootDocument() {
         <PreviewHostBridge />
         <AuthProvider>
           <CartHydration />
+          <SeasonalLayer />
           <div className="flex min-h-dvh flex-col">
             <SiteHeader />
             <Outlet />

@@ -18,6 +18,13 @@ import {
   saveScent,
   type ProductInput,
 } from "@/lib/catalog-api";
+import {
+  deleteCampaign,
+  listCampaigns,
+  saveCampaign,
+  type Campaign,
+  type CampaignTheme,
+} from "@/lib/campaign-api";
 import { formatDate, formatPrice } from "@/lib/format";
 import type { Order } from "@/lib/orders";
 import { shapeLabel, type Product, type Scent, type WaxColor } from "@/lib/products";
@@ -25,7 +32,7 @@ import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/admin")({ component: AdminPage });
 
-type Tab = "productos" | "aromas" | "colores" | "pedidos";
+type Tab = "productos" | "aromas" | "colores" | "pedidos" | "temporada";
 
 function AdminPage() {
   const { user, isPending } = useFirebaseUser();
@@ -34,15 +41,17 @@ function AdminPage() {
   const [scents, setScents] = useState<Scent[]>([]);
   const [colors, setColors] = useState<WaxColor[]>([]);
   const [orders, setOrders] = useState<Order[]>([]);
+  const [campaigns, setCampaigns] = useState<Campaign[]>([]);
   const [status, setStatus] = useState<"loading" | "ready" | "forbidden">("loading");
   const [editing, setEditing] = useState<Product | "new" | null>(null);
 
   const refresh = useCallback(async () => {
-    const data = await loadAdmin();
+    const [data, camp] = await Promise.all([loadAdmin(), listCampaigns()]);
     setProducts(data.products);
     setScents(data.scents);
     setColors(data.colors);
     setOrders(data.orders);
+    setCampaigns(camp);
     setStatus("ready");
   }, []);
 
@@ -73,8 +82,7 @@ function AdminPage() {
       <p className="text-xs tracking-[0.22em] uppercase text-gold">Atelier</p>
       <h1 className="font-display mt-2 text-headline">Administración</h1>
       <p className="mt-2 text-sm text-muted">
-        Productos, aromas, colores, stock, precios e imágenes. Los cambios se
-        ven en la tienda al momento.
+        Productos, aromas, colores, pedidos y campañas de temporada.
       </p>
       <p className="mt-1 text-xs text-subtle">{user.email}</p>
       <div className="mt-4 flex flex-wrap gap-2">
@@ -100,6 +108,7 @@ function AdminPage() {
             ["aromas", "Aromas"],
             ["colores", "Colores"],
             ["pedidos", "Pedidos"],
+            ["temporada", "Temporada"],
           ] as const
         ).map(([id, label]) => (
           <button
@@ -175,6 +184,21 @@ function AdminPage() {
           />
         ) : null}
         {tab === "pedidos" ? <OrdersTab orders={orders} /> : null}
+        {tab === "temporada" ? (
+          <CampaignTab
+            campaigns={campaigns}
+            products={products}
+            onSave={async (input) => {
+              await saveCampaign({ data: input });
+              await refresh();
+            }}
+            onDelete={async (id) => {
+              if (!window.confirm("¿Borrar esta campaña?")) return;
+              await deleteCampaign({ data: id });
+              await refresh();
+            }}
+          />
+        ) : null}
       </div>
     </main>
   );
@@ -446,6 +470,270 @@ function OrdersTab({ orders }: { orders: Order[] }) {
           </ul>
         </article>
       ))}
+    </div>
+  );
+}
+
+const THEMES: { id: CampaignTheme; label: string }[] = [
+  { id: "muertos", label: "Día de Muertos" },
+  { id: "halloween", label: "Halloween" },
+  { id: "navidad", label: "Navidad" },
+  { id: "madres", label: "Día de las Madres" },
+  { id: "custom", label: "Otro" },
+];
+
+function CampaignTab({
+  campaigns,
+  products,
+  onSave,
+  onDelete,
+}: {
+  campaigns: Campaign[];
+  products: Product[];
+  onSave: (input: {
+    id?: string;
+    slug: string;
+    title: string;
+    subtitle: string;
+    theme: CampaignTheme;
+    active: boolean;
+    showPopup: boolean;
+    showBanner: boolean;
+    productIds: string[];
+    ctaLabel: string;
+    ctaHref: string;
+  }) => Promise<void>;
+  onDelete: (id: string) => Promise<void>;
+}) {
+  const current = campaigns[0] ?? null;
+  const [title, setTitle] = useState(current?.title ?? "Día de Muertos y Halloween");
+  const [subtitle, setSubtitle] = useState(
+    current?.subtitle ?? "Velas de temporada para el altar y la noche",
+  );
+  const [slug, setSlug] = useState(current?.slug ?? "muertos-2026");
+  const [theme, setTheme] = useState<CampaignTheme>(current?.theme ?? "muertos");
+  const [active, setActive] = useState(current?.active ?? true);
+  const [showPopup, setShowPopup] = useState(current?.showPopup ?? true);
+  const [showBanner, setShowBanner] = useState(current?.showBanner ?? true);
+  const [ctaLabel, setCtaLabel] = useState(current?.ctaLabel ?? "Ver colección");
+  const [ctaHref, setCtaHref] = useState(current?.ctaHref ?? "/catalogo");
+  const [productIds, setProductIds] = useState<string[]>(current?.productIds ?? []);
+  const [editingId, setEditingId] = useState<string | undefined>(current?.id);
+  const [error, setError] = useState<string | null>(null);
+  const [saving, setSaving] = useState(false);
+
+  function loadCampaign(c: Campaign) {
+    setEditingId(c.id);
+    setTitle(c.title);
+    setSubtitle(c.subtitle);
+    setSlug(c.slug);
+    setTheme(c.theme);
+    setActive(c.active);
+    setShowPopup(c.showPopup);
+    setShowBanner(c.showBanner);
+    setCtaLabel(c.ctaLabel);
+    setCtaHref(c.ctaHref);
+    setProductIds(c.productIds);
+  }
+
+  return (
+    <div className="max-w-2xl space-y-8">
+      <div>
+        <h2 className="font-display text-title">Temporada</h2>
+        <p className="mt-2 text-sm text-muted">
+          Una campaña activa adorna la tienda, muestra un banner y un popup con
+          productos. Sirve para Muertos, Halloween, Madres, Navidad…
+        </p>
+      </div>
+
+      {campaigns.length > 0 ? (
+        <ul className="divide-y divide-border border-y border-border">
+          {campaigns.map((c) => (
+            <li
+              key={c.id}
+              className="flex flex-wrap items-center justify-between gap-3 py-3"
+            >
+              <div>
+                <p className="font-medium">
+                  {c.title}{" "}
+                  {c.active ? (
+                    <span className="text-xs text-primary">· activa</span>
+                  ) : null}
+                </p>
+                <p className="text-xs text-subtle">
+                  {c.theme} · {c.productIds.length} productos
+                </p>
+              </div>
+              <span className="flex gap-3">
+                <button
+                  type="button"
+                  className="text-sm text-primary"
+                  onClick={() => loadCampaign(c)}
+                >
+                  Editar
+                </button>
+                <button
+                  type="button"
+                  className="text-sm text-muted hover:text-danger"
+                  onClick={() => void onDelete(c.id)}
+                >
+                  Borrar
+                </button>
+              </span>
+            </li>
+          ))}
+        </ul>
+      ) : null}
+
+      <form
+        className="space-y-5"
+        onSubmit={(e) => {
+          e.preventDefault();
+          setSaving(true);
+          setError(null);
+          void onSave({
+            id: editingId,
+            slug,
+            title,
+            subtitle,
+            theme,
+            active,
+            showPopup,
+            showBanner,
+            productIds,
+            ctaLabel,
+            ctaHref,
+          })
+            .then(() => setSaving(false))
+            .catch((err: Error) => {
+              setError(err.message);
+              setSaving(false);
+            });
+        }}
+      >
+        <div className="grid gap-4 sm:grid-cols-2">
+          <div>
+            <label className="mb-1.5 block text-sm font-medium" htmlFor="c-title">
+              Título
+            </label>
+            <Input id="c-title" value={title} onChange={(e) => setTitle(e.target.value)} />
+          </div>
+          <div>
+            <label className="mb-1.5 block text-sm font-medium" htmlFor="c-slug">
+              Slug
+            </label>
+            <Input id="c-slug" value={slug} onChange={(e) => setSlug(e.target.value)} />
+          </div>
+        </div>
+        <div>
+          <label className="mb-1.5 block text-sm font-medium" htmlFor="c-sub">
+            Subtítulo
+          </label>
+          <Input
+            id="c-sub"
+            value={subtitle}
+            onChange={(e) => setSubtitle(e.target.value)}
+          />
+        </div>
+        <div>
+          <label className="mb-1.5 block text-sm font-medium" htmlFor="c-theme">
+            Tema visual
+          </label>
+          <select
+            id="c-theme"
+            className="h-11 w-full rounded-md border border-border bg-raised px-3.5 text-sm"
+            value={theme}
+            onChange={(e) => setTheme(e.target.value as CampaignTheme)}
+          >
+            {THEMES.map((t) => (
+              <option key={t.id} value={t.id}>
+                {t.label}
+              </option>
+            ))}
+          </select>
+        </div>
+        <div className="grid gap-4 sm:grid-cols-2">
+          <div>
+            <label className="mb-1.5 block text-sm font-medium" htmlFor="c-cta">
+              Texto del botón
+            </label>
+            <Input
+              id="c-cta"
+              value={ctaLabel}
+              onChange={(e) => setCtaLabel(e.target.value)}
+            />
+          </div>
+          <div>
+            <label className="mb-1.5 block text-sm font-medium" htmlFor="c-href">
+              Enlace del botón
+            </label>
+            <Input
+              id="c-href"
+              value={ctaHref}
+              onChange={(e) => setCtaHref(e.target.value)}
+            />
+          </div>
+        </div>
+
+        <div className="flex flex-wrap gap-6 text-sm">
+          <label className="flex h-11 items-center gap-2">
+            <input
+              type="checkbox"
+              checked={active}
+              onChange={(e) => setActive(e.target.checked)}
+            />
+            Campaña activa
+          </label>
+          <label className="flex h-11 items-center gap-2">
+            <input
+              type="checkbox"
+              checked={showBanner}
+              onChange={(e) => setShowBanner(e.target.checked)}
+            />
+            Banner superior
+          </label>
+          <label className="flex h-11 items-center gap-2">
+            <input
+              type="checkbox"
+              checked={showPopup}
+              onChange={(e) => setShowPopup(e.target.checked)}
+            />
+            Popup al entrar
+          </label>
+        </div>
+
+        <div>
+          <p className="mb-2 text-sm font-medium">Productos en el popup</p>
+          <div className="max-h-56 space-y-2 overflow-y-auto rounded-lg border border-border p-3">
+            {products.map((p) => {
+              const checked = productIds.includes(p.id);
+              return (
+                <label key={p.id} className="flex items-center gap-3 text-sm">
+                  <input
+                    type="checkbox"
+                    checked={checked}
+                    onChange={(e) => {
+                      setProductIds((prev) =>
+                        e.target.checked
+                          ? [...prev, p.id]
+                          : prev.filter((id) => id !== p.id),
+                      );
+                    }}
+                  />
+                  <span className="truncate">
+                    {p.name} · {formatPrice(p.price)}
+                  </span>
+                </label>
+              );
+            })}
+          </div>
+        </div>
+
+        {error ? <p className="text-sm text-danger">{error}</p> : null}
+        <Button type="submit" disabled={saving}>
+          {saving ? "Guardando…" : editingId ? "Actualizar campaña" : "Crear campaña"}
+        </Button>
+      </form>
     </div>
   );
 }
