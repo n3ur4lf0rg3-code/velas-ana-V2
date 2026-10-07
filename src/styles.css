@@ -158,37 +158,9 @@
     animation: none;
   }
 }
-/* ===== Temporadas (más visibles) ===== */
+/* ===== Temporadas ===== */
 html[data-theme="muertos"] {
-  /* Magenta / fucsia de papel picado */
-  --color-primary: #b91c5c;
-  --color-primary-hover: #9a174c;
-  --color-primary-fg: #fff8f5;
-
-  /* Cempasúchil */
-  --color-gold: #e8a317;
-  --color-gold-hover: #d4920f;
-  --color-gold-fg: #3a2408;
-
-  /* Mesa de ofrenda: marfil y lino */
-  --color-bg: #faf4eb;
-  --color-surface: #fff9f0;
-  --color-raised: #ffffff;
-
-  /* Texto cálido, no negro puro */
-  --color-fg: #2c1810;
-  --color-muted: #7a5c4a;
-  --color-subtle: #a08068;
-
-  /* Bordes con toque terracota */
-  --color-border: #e8d5c0;
-  --color-border-strong: #d4b898;
-  --color-rose: #e8a0b8;
-
-  --font-display: "Cinzel", "Cormorant Garamond", serif;
-}
-
-html[data-theme="halloween"] {
+  /* Misma paleta oscura naranja */
   --color-primary: #e85d04;
   --color-primary-hover: #d00000;
   --color-primary-fg: #1a1008;
@@ -202,7 +174,7 @@ html[data-theme="halloween"] {
   --color-subtle: #a89070;
   --color-border: #5c4020;
   --color-border-strong: #7a5630;
-  --font-display: "Oswald", "Outfit", sans-serif;
+  --font-display: "Creepster", "Georgia", cursive;
 }
 
 html[data-theme="navidad"] {
@@ -219,7 +191,7 @@ html[data-theme="navidad"] {
   --color-subtle: #7a947a;
   --color-border: #2d4a32;
   --color-border-strong: #3d5c42;
-  --font-display: "Playfair Display", "Cormorant Garamond", serif;
+  --font-display: "Mountains of Christmas", "Georgia", cursive;
 }
 
 html[data-theme="madres"] {
