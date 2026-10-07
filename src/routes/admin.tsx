@@ -475,8 +475,7 @@ function OrdersTab({ orders }: { orders: Order[] }) {
 }
 
 const THEMES: { id: CampaignTheme; label: string }[] = [
-  { id: "muertos", label: "Día de Muertos" },
-  { id: "halloween", label: "Halloween" },
+  { id: "muertos", label: "Día de Muertos/Halloween" },
   { id: "navidad", label: "Navidad" },
   { id: "madres", label: "Día de las Madres" },
   { id: "custom", label: "Otro" },
