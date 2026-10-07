@@ -19,12 +19,12 @@ export function ProductCard({ product }: { product: Product }) {
           className="aspect-portrait w-full object-cover transition-transform duration-700 ease-out group-hover:scale-[1.05]"
         />
         {product.isNew ? (
-          <Badge className="absolute top-3 left-3 border-gold/40 bg-raised/90 text-gold-fg">
+          <Badge className="absolute top-3 left-3 border-white/25 bg-black/55 text-white backdrop-blur-sm">
             Nueva
           </Badge>
         ) : null}
         {soldOut ? (
-          <Badge className="absolute top-3 right-3 border-gold/40 bg-raised/90 text-gold-fg">
+          <Badge className="absolute top-3 right-3 border-white/25 bg-black/55 text-white backdrop-blur-sm">
             Bajo pedido
           </Badge>
         ) : null}
