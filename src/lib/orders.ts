@@ -28,8 +28,12 @@ export type Order = {
 const KEY = "velas-ana-orders";
 
 export function makeOrderId() {
-  const n = Math.floor(1000 + Math.random() * 9000);
-  return `VA-${n}`;
+  const now = new Date();
+  const dd = String(now.getDate()).padStart(2, "0");
+  const mm = String(now.getMonth() + 1).padStart(2, "0");
+  const yyyy = String(now.getFullYear());
+  const rand = String(Math.floor(1000 + Math.random() * 9000));
+  return `VA-\( {dd} \){mm}\( {yyyy}- \){rand}`;
 }
 
 export function listOrders(): Order[] {
