@@ -144,7 +144,7 @@ function Home() {
         </Reveal>
         <Reveal delay={1}>
           <p className="text-xs tracking-[0.22em] uppercase text-gold">La casa</p>
-          <h2 className="font-display mt-2 text-headline">Un atelier pequeño, velas lentas</h2>
+          <h2 className="font-display mt-2 text-headline">Un taller hogareño</h2>
           <p className="mt-4 text-muted leading-relaxed">
             Velas Ana nace de la mesa de trabajo de Ana: cera de soya, mechas de
             algodón y aromas que enamoran.
