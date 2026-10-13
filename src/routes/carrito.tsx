@@ -57,11 +57,11 @@ function CartPage() {
             <li key={line.key} className="flex gap-4 py-6">
               <Link
                 to="/producto/$id"
-                params={{ id: line.product.id }}
+                params={{ id: line.productId }}
                 className="size-24 shrink-0 overflow-hidden rounded-lg bg-surface sm:size-28"
               >
                 <img
-                  src={line.product.image}
+                  src={line.productImage || line.product.image}
                   alt=""
                   className="size-full object-cover"
                 />
@@ -71,12 +71,12 @@ function CartPage() {
                   <div>
                     <Link
                       to="/producto/$id"
-                      params={{ id: line.product.id }}
+                      params={{ id: line.productId }}
                       className="font-display text-lg hover:text-primary"
                     >
-                      {line.product.name}
+                      {line.productName}
                     </Link>
-                    <p className="text-sm text-muted">{line.product.tagline}</p>
+                    <p className="text-xs text-subtle">SKU {line.sku}</p>
                     <p className="mt-1 flex items-center gap-2 text-sm text-subtle">
                       <span
                         className="inline-block size-2.5 rounded-full border border-border"
@@ -92,14 +92,14 @@ function CartPage() {
                 <div className="mt-auto flex items-center justify-between pt-3">
                   <QuantitySelector
                     value={line.quantity}
-                    max={Math.max(1, line.product.stock)}
+                    max={Math.max(1, line.stock)}
                     onChange={(qty) => setQuantity(line.key, qty)}
                   />
                   <button
                     type="button"
                     onClick={() => remove(line.key)}
                     className="flex size-11 items-center justify-center rounded-md text-muted hover:text-danger"
-                    aria-label={`Quitar ${line.product.name}`}
+                    aria-label={"Quitar " + line.productName}
                   >
                     <Trash2 className="size-4" />
                   </button>
@@ -116,8 +116,7 @@ function CartPage() {
             <span className="tabular-nums">{formatPrice(total)}</span>
           </div>
           <p className="mt-3 text-sm text-subtle">
-            El envío se confirma al recibir tu transferencia. No hay cargo con
-            tarjeta por ahora.
+            Pago contra entrega. Entrega solo en CDMX y área metropolitana.
           </p>
           <Button asChild size="lg" className="mt-6 w-full">
             <Link to="/checkout">Continuar el pedido</Link>
