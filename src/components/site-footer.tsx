@@ -7,11 +7,8 @@ export function SiteFooter() {
     <footer className="mt-auto border-t border-border bg-surface">
       <div className="mx-auto grid max-w-6xl gap-10 px-4 py-14 sm:px-6 md:grid-cols-3">
         <div>
-          <Link to="/" className="inline-block" aria-label="Velas Ana, ir al inicio">
-            <BrandLogo decorative className="h-20 md:h-24" />
-          </Link>
           <p className="mt-4 max-w-sm text-sm leading-relaxed text-muted">
-            Velas aromáticas artesanales esculpidas a mano en la Ciudad de México. Rosas,
+            Velas aromáticas artesanales hechas a mano en la Ciudad de México. Rosas,
             frappés, wax melts y formas que se quedan en la mesa.
           </p>
         </div>
