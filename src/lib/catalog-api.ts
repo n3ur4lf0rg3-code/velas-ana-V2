@@ -110,6 +110,7 @@ async function fetchCatalog() {
 }
 
 function slugify(name: string) {
+function slugify(name: string) {
   const base = name
     .toLowerCase()
     .normalize("NFD")
