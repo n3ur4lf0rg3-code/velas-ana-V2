@@ -1,5 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
 import { getSql } from "@/lib/db";
+import { notifyNewOrder } from "@/lib/notify-order";
 import type { Product, Scent, WaxColor } from "@/lib/products";
 import type { Order } from "@/lib/orders";
 
@@ -117,7 +118,16 @@ function slugify(name: string) {
     .replace(/^-+|-+$/g, "")
     .slice(0, 40);
   const suffix = Math.random().toString(36).slice(2, 6);
-  return `${base || "pieza"}-${suffix}`;
+  return `\( {base || "pieza"}- \){suffix}`;
+}
+
+function makeOrderId() {
+  const now = new Date();
+  const dd = String(now.getDate()).padStart(2, "0");
+  const mm = String(now.getMonth() + 1).padStart(2, "0");
+  const yyyy = String(now.getFullYear());
+  const rand = String(Math.floor(1000 + Math.random() * 9000));
+  return `VA-\( {dd} \){mm}\( {yyyy}- \){rand}`;
 }
 
 export type CatalogPayload = {
@@ -428,7 +438,6 @@ export const placeOrder = createServerFn({ method: "POST" })
       const inStock = Number(product.stock);
       const madeToOrder = inStock < qty;
 
-      // Si hay stock, se descuenta. Si no, se pide bajo pedido (2–3 días).
       if (!madeToOrder) {
         const updated = await sql.query<{ id: string }>(
           "update products set stock = stock - $2 where id = $1 and stock >= $2 returning id",
@@ -456,7 +465,7 @@ export const placeOrder = createServerFn({ method: "POST" })
       total += price * qty;
     }
 
-    const id = `VA-${Math.floor(1000 + Math.random() * 9000)}`;
+    const id = makeOrderId();
     const createdAt = new Date().toISOString();
     await sql.query(
       `insert into orders (id, created_at, customer_name, customer_email, customer_phone, customer_address, notes, total)
@@ -471,11 +480,17 @@ export const placeOrder = createServerFn({ method: "POST" })
       );
     }
 
-    return {
+    const order: Order = {
       id,
       createdAt,
       customer: { name, email, phone, address, notes },
       lines,
       total,
     };
+
+    await notifyNewOrder(order).catch((err) => {
+      console.error("[notify]", err);
+    });
+
+    return order;
   });
