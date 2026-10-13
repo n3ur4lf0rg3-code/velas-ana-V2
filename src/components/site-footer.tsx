@@ -11,7 +11,7 @@ export function SiteFooter() {
             <BrandLogo decorative className="h-20 md:h-24" />
           </Link>
           <p className="mt-4 max-w-sm text-sm leading-relaxed text-muted">
-            Velas aromáticas artesanales esculpidas a mano en {STORE.city}. Rosas,
+            Velas aromáticas artesanales esculpidas a mano en la Ciudad de México. Rosas,
             frappés, wax melts y formas que se quedan en la mesa.
           </p>
         </div>
