@@ -19,7 +19,10 @@ export type WaxColor = {
 };
 
 export type Product = {
+  /** Igual al SKU (id en BD). */
   id: string;
+  /** Código de producto generado del nombre. */
+  sku: string;
   name: string;
   tagline: string;
   description: string;
@@ -38,9 +41,21 @@ export type Product = {
   featured: boolean;
   isNew: boolean;
   image: string;
-  /** Ids de colores que el cliente puede elegir. Vacío = todos. */
   availableColorIds: string[];
 };
+
+/** Genera SKU a partir del nombre. Ej: "Boo-ñuelo" -> "boo-nuelo-a3k2" */
+export function generateSku(name: string) {
+  const base = name
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "")
+    .slice(0, 40);
+  const suffix = Math.random().toString(36).slice(2, 6);
+  return (base || "pieza") + "-" + suffix;
+}
 
 export function shapeLabel(id: string) {
   return SHAPES.find((s) => s.id === id)?.label ?? id;
