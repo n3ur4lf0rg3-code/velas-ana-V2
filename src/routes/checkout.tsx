@@ -96,7 +96,7 @@ function CheckoutPage() {
             notes: notes.trim(),
           },
           items: items.map((item) => ({
-            productId: item.productId,
+            productId: item.productId || item.sku,
             quantity: item.quantity,
             scentId: item.scentId,
             scentName: item.scentName,
@@ -193,7 +193,7 @@ function CheckoutPage() {
             {lines.map((line) => (
               <li key={line.key} className="flex justify-between gap-3 text-sm">
                 <span className="text-muted">
-                  {line.product.name} × {line.quantity}
+                  {line.productName} × {line.quantity}
                   <span className="block text-xs text-subtle">
                     {line.scentName} · {line.colorName}
                   </span>
@@ -237,4 +237,4 @@ function Field({
       {error ? <p className="mt-1.5 text-sm text-danger">{error}</p> : null}
     </div>
   );
-        }
+                  }
