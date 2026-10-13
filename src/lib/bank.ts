@@ -9,7 +9,12 @@ export const BANK = {
 
 export const STORE = {
   name: "Velas Ana",
-  email: "hola@velasana.mx",
-  city: "Ciudad de México",
-  whatsapp: "55 1234 5678",
+  email: "info.velas.ana@gmail.com",
+  city: "Ciudad de México y área metropolitana",
+  whatsapp: "56 6857 4383",
+  /** Solo dígitos con código de país (México 52) */
+  whatsappE164: "525668574383",
+  payment: "contra_entrega" as const,
+  deliveryNote:
+    "Entrega únicamente en CDMX y área metropolitana. Fecha, hora y punto de encuentro se acuerdan al confirmar el pedido.",
 } as const;
