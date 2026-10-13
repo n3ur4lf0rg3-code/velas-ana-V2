@@ -34,7 +34,8 @@ function validate(values: {
     errors.phone = "Escribe un teléfono a 10 dígitos";
   }
   if (values.address.trim().length < 12) {
-    errors.address = "Incluye calle, colonia, ciudad y código postal";
+    errors.address =
+      "Incluye calle, colonia, alcaldía o municipio (CDMX / área metropolitana) y C.P.";
   }
   return errors;
 }
@@ -120,8 +121,9 @@ function CheckoutPage() {
       <p className="text-xs tracking-[0.22em] uppercase text-gold">Pedido</p>
       <h1 className="font-display mt-2 text-headline">Tus datos</h1>
       <p className="mt-3 max-w-xl text-muted">
-        Al confirmar te damos un número de orden y los datos para transferir.
-        Todavía no hay pago con tarjeta.
+        Al confirmar te damos un número de orden. El pago es{" "}
+        <strong>contra entrega</strong>. Entregamos solo en CDMX y área
+        metropolitana.
       </p>
 
       <form
@@ -159,12 +161,16 @@ function CheckoutPage() {
               onChange={(e) => setPhone(e.target.value)}
             />
           </Field>
-          <Field label="Dirección de envío" error={errors.address} htmlFor="address">
+          <Field
+            label="Dirección de entrega (CDMX / área metropolitana)"
+            error={errors.address}
+            htmlFor="address"
+          >
             <Textarea
               id="address"
               name="address"
               autoComplete="street-address"
-              placeholder="Calle, número, colonia, ciudad, estado y C.P."
+              placeholder="Calle, número, colonia, alcaldía o municipio y C.P."
               value={address}
               onChange={(e) => setAddress(e.target.value)}
             />
@@ -173,7 +179,7 @@ function CheckoutPage() {
             <Textarea
               id="notes"
               name="notes"
-              placeholder="Horario de entrega, empaque de regalo…"
+              placeholder="Horario preferido, empaque de regalo, punto de referencia…"
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
             />
@@ -200,6 +206,7 @@ function CheckoutPage() {
             <span>Total</span>
             <span className="tabular-nums">{formatPrice(total)}</span>
           </div>
+          <p className="mt-2 text-xs text-subtle">Pagas al recibir (contra entrega).</p>
           <Button type="submit" size="lg" className="mt-6 w-full" disabled={submitting}>
             Confirmar pedido
           </Button>
@@ -230,4 +237,4 @@ function Field({
       {error ? <p className="mt-1.5 text-sm text-danger">{error}</p> : null}
     </div>
   );
-}
+        }
