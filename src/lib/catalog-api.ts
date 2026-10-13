@@ -109,7 +109,6 @@ async function fetchCatalog() {
   };
 }
 
-/** SKU / id generado del nombre del producto */
 function slugify(name: string) {
   const base = name
     .toLowerCase()
@@ -254,14 +253,83 @@ export const saveProduct = createServerFn({ method: "POST" })
   .handler(async ({ data }) => {
     const product = cleanProductInput(data);
     const sql = await getSql();
-    // SKU = id generado del nombre si es producto nuevo
     const id = product.id?.trim() || slugify(product.name);
     const notes = JSON.stringify(product.notes);
-    const availableColorIds = JSONert into scents (id, name, sort_order) values ($1, $2, 50)
-       on conflict (id) do update set name = excluded.name`,
+    const availableColorIds = JSON.stringify(product.availableColorIds);
+    const existing = await sql.query<{ id: string; image: string }>(
+      "select id, image from products where id = $1",
+      [id],
+    );
+    const image = product.image || existing[0]?.image || "";
+    if (existing[0]) {
+      await sql.query(
+        "update products set name=$2, tagline=$3, description=$4, care=$5, price=$6, stock=$7, shape=$8, scent_id=$9, color_id=$10, notes=$11, burn_hours=$12, weight=$13, featured=$14, is_new=$15, image=$16, available_color_ids=$17 where id=$1",
+        [
+          id,
+          product.name,
+          product.tagline,
+          product.description,
+          product.care,
+          product.price,
+          product.stock,
+          product.shape,
+          product.scentId,
+          product.colorId,
+          notes,
+          product.burnHours,
+          product.weight,
+          product.featured,
+          product.isNew,
+          image,
+          availableColorIds,
+        ],
+      );
+    } else {
+      await sql.query(
+        "insert into products (id, name, tagline, description, care, price, stock, shape, scent_id, color_id, notes, burn_hours, weight, featured, is_new, image, available_color_ids) values ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17)",
+        [
+          id,
+          product.name,
+          product.tagline,
+          product.description,
+          product.care,
+          product.price,
+          product.stock,
+          product.shape,
+          product.scentId,
+          product.colorId,
+          notes,
+          product.burnHours,
+          product.weight,
+          product.featured,
+          product.isNew,
+          image,
+          availableColorIds,
+        ],
+      );
+    }
+    return { id: id };
+  });
+
+export const deleteProduct = createServerFn({ method: "POST" })
+  .validator((id: string) => id)
+  .handler(async ({ data: id }) => {
+    const sql = await getSql();
+    await sql.query("delete from products where id = $1", [id]);
+  });
+
+export const saveScent = createServerFn({ method: "POST" })
+  .validator((input: { id?: string; name: string }) => input)
+  .handler(async ({ data }) => {
+    const name = data.name.trim();
+    if (name.length < 2) throw new Error("Escribe el nombre del aroma");
+    const sql = await getSql();
+    const id = data.id?.trim() || slugify(name);
+    await sql.query(
+      "insert into scents (id, name, sort_order) values ($1, $2, 50) on conflict (id) do update set name = excluded.name",
       [id, name],
     );
-    return { id };
+    return { id: id };
   });
 
 export const deleteScent = createServerFn({ method: "POST" })
@@ -273,7 +341,7 @@ export const deleteScent = createServerFn({ method: "POST" })
       [id],
     );
     if ((used[0]?.n ?? 0) > 0) {
-      throw new Error("Hay velas con este aroma. Cámbialas antes de borrar.");
+      throw new Error("Hay velas con este aroma. Cambialas antes de borrar.");
     }
     await sql.query("delete from scents where id = $1", [id]);
   });
@@ -283,17 +351,16 @@ export const saveColor = createServerFn({ method: "POST" })
   .handler(async ({ data }) => {
     const name = data.name.trim();
     let hex = data.hex.trim().toUpperCase();
-    if (!hex.startsWith("#")) hex = `#${hex}`;
+    if (!hex.startsWith("#")) hex = "#" + hex;
     if (name.length < 2) throw new Error("Escribe el nombre del color");
     if (!/^#[0-9A-F]{6}$/.test(hex)) throw new Error("Usa un color en formato #RRGGBB");
     const sql = await getSql();
     const id = data.id?.trim() || slugify(name);
     await sql.query(
-      `insert into colors (id, name, hex, sort_order) values ($1, $2, $3, 50)
-       on conflict (id) do update set name = excluded.name, hex = excluded.hex`,
+      "insert into colors (id, name, hex, sort_order) values ($1, $2, $3, 50) on conflict (id) do update set name = excluded.name, hex = excluded.hex",
       [id, name, hex],
     );
-    return { id };
+    return { id: id };
   });
 
 export const deleteColor = createServerFn({ method: "POST" })
@@ -305,7 +372,7 @@ export const deleteColor = createServerFn({ method: "POST" })
       [id],
     );
     if ((used[0]?.n ?? 0) > 0) {
-      throw new Error("Hay velas con este color. Cámbialas antes de borrar.");
+      throw new Error("Hay velas con este color. Cambialas antes de borrar.");
     }
     await sql.query("delete from colors where id = $1", [id]);
   });
@@ -337,10 +404,10 @@ export const placeOrder = createServerFn({ method: "POST" })
     const address = data.customer.address.trim();
     const notes = data.customer.notes.trim();
     if (name.length < 2) throw new Error("Escribe tu nombre completo");
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) throw new Error("Escribe un correo válido");
-    if (phone.replace(/\D/g, "").length < 10) throw new Error("Escribe un teléfono a 10 dígitos");
-    if (address.length < 12) throw new Error("Incluye calle, colonia, ciudad y código postal");
-    if (data.items.length === 0) throw new Error("El carrito está vacío");
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) throw new Error("Escribe un correo valido");
+    if (phone.replace(/\D/g, "").length < 10) throw new Error("Escribe un telefono a 10 digitos");
+    if (address.length < 12) throw new Error("Incluye calle, colonia, ciudad y codigo postal");
+    if (data.items.length === 0) throw new Error("El carrito esta vacio");
 
     const sql = await getSql();
     const lines: Order["lines"] = [];
@@ -358,7 +425,7 @@ export const placeOrder = createServerFn({ method: "POST" })
         item.productId,
       ]);
       const product = rows[0];
-      if (!product) throw new Error("Una pieza del carrito ya no está en el catálogo");
+      if (!product) throw new Error("Una pieza del carrito ya no esta en el catalogo");
 
       const inStock = Number(product.stock);
       const madeToOrder = inStock < qty;
@@ -369,7 +436,7 @@ export const placeOrder = createServerFn({ method: "POST" })
           [product.id, qty],
         );
         if (!updated[0]) {
-          throw new Error(`No hay suficiente ${product.name}.`);
+          throw new Error("No hay suficiente " + product.name + ".");
         }
       }
 
@@ -377,13 +444,13 @@ export const placeOrder = createServerFn({ method: "POST" })
       const labelParts = [product.name];
       if (item.scentName) labelParts.push(item.scentName);
       if (item.colorName) labelParts.push(item.colorName);
-      if (madeToOrder) labelParts.push("bajo pedido 2–3 días");
+      if (madeToOrder) labelParts.push("bajo pedido 2-3 dias");
       const label = labelParts.join(" · ");
 
       lines.push({
         productId: product.id,
         name: label,
-        price,
+        price: price,
         quantity: qty,
         image: product.image,
       });
@@ -402,184 +469,28 @@ export const placeOrder = createServerFn({ method: "POST" })
 
     const createdAt = new Date().toISOString();
     await sql.query(
-      `insert into orders (id, created_at, customer_name, customer_email, customer_phone, customer_address, notes, total)
-       values ($1, $2, $3, $4, $5, $6, $7, $8)`,
+      "insert into orders (id, created_at, customer_name, customer_email, customer_phone, customer_address, notes, total) values ($1, $2, $3, $4, $5, $6, $7, $8)",
       [id, createdAt, name, email, phone, address, notes, total],
     );
     for (const line of lines) {
       await sql.query(
-        `insert into order_lines (order_id, product_id, name, price, quantity, image)
-         values ($1, $2, $3, $4, $5, $6)`,
+        "insert into order_lines (order_id, product_id, name, price, quantity, image) values ($1, $2, $3, $4, $5, $6)",
         [id, line.productId, line.name, line.price, line.quantity, line.image],
       );
     }
 
     const order: Order = {
-      id,
-      createdAt,
-      customer: { name, email, phone, address, notes },
-      lines,
-      total,
-    };
-
-    await notifyNewOrder(order).catch((err) => {
-      console.error("[notify]", err);
-    });
-
-    return order;
-  });       on conflict (id) do update set name = excluded.name`,
-      [id, name],
-    );
-    return { id };
-  });
-
-export const deleteScent = createServerFn({ method: "POST" })
-  .validator((id: string) => id)
-  .handler(async ({ data: id }) => {
-    const sql = await getSql();
-    const used = await sql.query<{ n: number }>(
-      "select count(*)::int as n from products where scent_id = $1",
-      [id],
-    );
-    if ((used[0]?.n ?? 0) > 0) {
-      throw new Error("Hay velas con este aroma. Cámbialas antes de borrar.");
-    }
-    await sql.query("delete from scents where id = $1", [id]);
-  });
-
-export const saveColor = createServerFn({ method: "POST" })
-  .validator((input: { id?: string; name: string; hex: string }) => input)
-  .handler(async ({ data }) => {
-    const name = data.name.trim();
-    let hex = data.hex.trim().toUpperCase();
-    if (!hex.startsWith("#")) hex = `#${hex}`;
-    if (name.length < 2) throw new Error("Escribe el nombre del color");
-    if (!/^#[0-9A-F]{6}$/.test(hex)) throw new Error("Usa un color en formato #RRGGBB");
-    const sql = await getSql();
-    const id = data.id?.trim() || slugify(name);
-    await sql.query(
-      `insert into colors (id, name, hex, sort_order) values ($1, $2, $3, 50)
-       on conflict (id) do update set name = excluded.name, hex = excluded.hex`,
-      [id, name, hex],
-    );
-    return { id };
-  });
-
-export const deleteColor = createServerFn({ method: "POST" })
-  .validator((id: string) => id)
-  .handler(async ({ data: id }) => {
-    const sql = await getSql();
-    const used = await sql.query<{ n: number }>(
-      "select count(*)::int as n from products where color_id = $1",
-      [id],
-    );
-    if ((used[0]?.n ?? 0) > 0) {
-      throw new Error("Hay velas con este color. Cámbialas antes de borrar.");
-    }
-    await sql.query("delete from colors where id = $1", [id]);
-  });
-
-export type CheckoutPayload = {
-  customer: {
-    name: string;
-    email: string;
-    phone: string;
-    address: string;
-    notes: string;
-  };
-  items: {
-    productId: string;
-    quantity: number;
-    scentId?: string;
-    scentName?: string;
-    colorId?: string;
-    colorName?: string;
-  }[];
-};
-
-export const placeOrder = createServerFn({ method: "POST" })
-  .validator((input: CheckoutPayload) => input)
-  .handler(async ({ data }): Promise<Order> => {
-    const name = data.customer.name.trim();
-    const email = data.customer.email.trim();
-    const phone = data.customer.phone.trim();
-    const address = data.customer.address.trim();
-    const notes = data.customer.notes.trim();
-    if (name.length < 2) throw new Error("Escribe tu nombre completo");
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) throw new Error("Escribe un correo válido");
-    if (phone.replace(/\D/g, "").length < 10) throw new Error("Escribe un teléfono a 10 dígitos");
-    if (address.length < 12) throw new Error("Incluye calle, colonia, ciudad y código postal");
-    if (data.items.length === 0) throw new Error("El carrito está vacío");
-
-    const sql = await getSql();
-    const lines: Order["lines"] = [];
-    let total = 0;
-
-    for (const item of data.items) {
-      const qty = Math.max(1, Math.round(item.quantity));
-      const rows = await sql.query<{
-        id: string;
-        name: string;
-        price: number;
-        stock: number;
-        image: string;
-      }>("select id, name, price, stock, image from products where id = $1", [
-        item.productId,
-      ]);
-      const product = rows[0];
-      if (!product) throw new Error("Una pieza del carrito ya no está en el catálogo");
-
-      const inStock = Number(product.stock);
-      const madeToOrder = inStock < qty;
-
-      if (!madeToOrder) {
-        const updated = await sql.query<{ id: string }>(
-          "update products set stock = stock - $2 where id = $1 and stock >= $2 returning id",
-          [product.id, qty],
-        );
-        if (!updated[0]) {
-          throw new Error(`No hay suficiente ${product.name}.`);
-        }
-      }
-
-      const price = Number(product.price);
-      const labelParts = [product.name];
-      if (item.scentName) labelParts.push(item.scentName);
-      if (item.colorName) labelParts.push(item.colorName);
-      if (madeToOrder) labelParts.push("bajo pedido 2–3 días");
-      const label = labelParts.join(" · ");
-
-      lines.push({
-        productId: product.id,
-        name: label,
-        price,
-        quantity: qty,
-        image: product.image,
-      });
-      total += price * qty;
-    }
-
-    const id = makeOrderId();
-    const createdAt = new Date().toISOString();
-    await sql.query(
-      `insert into orders (id, created_at, customer_name, customer_email, customer_phone, customer_address, notes, total)
-       values ($1, $2, $3, $4, $5, $6, $7, $8)`,
-      [id, createdAt, name, email, phone, address, notes, total],
-    );
-    for (const line of lines) {
-      await sql.query(
-        `insert into order_lines (order_id, product_id, name, price, quantity, image)
-         values ($1, $2, $3, $4, $5, $6)`,
-        [id, line.productId, line.name, line.price, line.quantity, line.image],
-      );
-    }
-
-    const order: Order = {
-      id,
-      createdAt,
-      customer: { name, email, phone, address, notes },
-      lines,
-      total,
+      id: id,
+      createdAt: createdAt,
+      customer: {
+        name: name,
+        email: email,
+        phone: phone,
+        address: address,
+        notes: notes,
+      },
+      lines: lines,
+      total: total,
     };
 
     await notifyNewOrder(order).catch((err) => {
