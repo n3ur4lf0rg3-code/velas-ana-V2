@@ -3,6 +3,7 @@ import { ArrowRight } from "lucide-react";
 import { Ornament } from "@/components/ornament";
 import { ProductCard } from "@/components/product-card";
 import { Reveal } from "@/components/reveal";
+import { ReviewsSection } from "@/components/reviews-section";
 import { Button } from "@/components/ui/button";
 import { listCatalog } from "@/lib/catalog-api";
 import { SHAPES } from "@/lib/products";
@@ -69,8 +70,8 @@ function Home() {
               body: "Notas botánicas y gourmand, pensadas para habitaciones reales, no para vitrinas.",
             },
             {
-              title: "Pago sencillo",
-              body: "Elige, confirma y transfiere. Te enviamos al recibir el comprobante.",
+              title: "Contra entrega",
+              body: "Pagas al recibir en CDMX y área metropolitana. Coordinamos el encuentro contigo.",
             },
           ].map((item, i) => (
             <Reveal key={item.title} delay={(i % 3) as 0 | 1 | 2}>
@@ -131,6 +132,8 @@ function Home() {
         </div>
       </section>
 
+      <ReviewsSection />
+
       <section className="mx-auto grid max-w-6xl items-center gap-10 px-4 py-16 sm:px-6 lg:grid-cols-2">
         <Reveal className="overflow-hidden rounded-2xl bg-surface">
           <img
@@ -145,8 +148,9 @@ function Home() {
           <p className="mt-4 text-muted leading-relaxed">
             Velas Ana nace de la mesa de trabajo de Ana: cera de soya, mechas de
             algodón y moldes que se tratan como flores. No hay dos rosas iguales.
-            Pedimos con calma y enviamos cuando el depósito llega — así cada
-            pedido se atiende como una pieza, no como una fila.
+            Pedimos con calma y entregamos en CDMX y área metropolitana, con pago
+            contra entrega — así cada pedido se atiende como una pieza, no como
+            una fila.
           </p>
           <Button asChild variant="outline" className="mt-8">
             <Link to="/nosotros">Conocer la casa</Link>
