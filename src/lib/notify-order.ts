@@ -37,7 +37,7 @@ export function orderWhatsAppUrl(order: Order) {
   return `https://wa.me/\( {STORE.whatsappE164}?text= \){text}`;
 }
 
-/** Correo al dueño vía FormSubmit (gratis, sin tarjeta). */
+/** Correo al dueño vía FormSubmit (gratis). Primera vez confirma el mail. */
 export async function notifyNewOrder(order: Order) {
   const body = {
     _subject: `Nuevo pedido ${order.id} — Velas Ana`,
@@ -54,7 +54,6 @@ export async function notifyNewOrder(order: Order) {
     fecha: order.createdAt,
   };
 
-  // FormSubmit: primera vez pide confirmar el correo en la bandeja de info.velas.ana@gmail.com
   const res = await fetch(`https://formsubmit.co/ajax/${STORE.email}`, {
     method: "POST",
     headers: {
@@ -68,4 +67,4 @@ export async function notifyNewOrder(order: Order) {
     const t = await res.text();
     throw new Error(`FormSubmit falló: ${res.status} ${t}`);
   }
-    }
+}
