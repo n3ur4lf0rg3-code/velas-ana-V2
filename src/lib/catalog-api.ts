@@ -59,6 +59,7 @@ function parseIdList(raw: string | null | undefined): string[] {
 function mapProduct(row: ProductRow): Product {
   return {
     id: row.id,
+    sku: row.id,
     name: row.name,
     tagline: row.tagline,
     description: row.description,
@@ -81,20 +82,19 @@ function mapProduct(row: ProductRow): Product {
   };
 }
 
-const PRODUCT_SELECT = `
-  select p.id, p.name, p.tagline, p.description, p.care, p.price, p.stock, p.shape,
-    p.scent_id, s.name as scent_name, p.color_id, c.name as color_name, c.hex as color_hex,
-    p.notes, p.burn_hours, p.weight, p.featured, p.is_new, p.image,
-    coalesce(p.available_color_ids, '[]') as available_color_ids
-  from products p
-  join scents s on s.id = p.scent_id
-  join colors c on c.id = p.color_id
-`;
+const PRODUCT_SELECT =
+  "select p.id, p.name, p.tagline, p.description, p.care, p.price, p.stock, p.shape, " +
+  "p.scent_id, s.name as scent_name, p.color_id, c.name as color_name, c.hex as color_hex, " +
+  "p.notes, p.burn_hours, p.weight, p.featured, p.is_new, p.image, " +
+  "coalesce(p.available_color_ids, '[]') as available_color_ids " +
+  "from products p " +
+  "join scents s on s.id = p.scent_id " +
+  "join colors c on c.id = p.color_id";
 
 async function fetchCatalog() {
   const sql = await getSql();
   const productRows = await sql.query<ProductRow>(
-    `${PRODUCT_SELECT} order by p.featured desc, p.name`,
+    PRODUCT_SELECT + " order by p.featured desc, p.name",
   );
   const scentRows = await sql.query<{ id: string; name: string }>(
     "select id, name from scents order by sort_order, name",
@@ -109,7 +109,7 @@ async function fetchCatalog() {
   };
 }
 
-function slugify(name: string) {
+/** SKU / id generado del nombre del producto */
 function slugify(name: string) {
   const base = name
     .toLowerCase()
@@ -146,9 +146,10 @@ export const getCatalogProduct = createServerFn({ method: "GET" })
   .validator((id: string) => id)
   .handler(async ({ data: id }): Promise<Product | null> => {
     const sql = await getSql();
-    const rows = await sql.query<ProductRow>(`${PRODUCT_SELECT} where p.id = $1`, [
-      id,
-    ]);
+    const rows = await sql.query<ProductRow>(
+      PRODUCT_SELECT + " where p.id = $1",
+      [id],
+    );
     const row = rows[0];
     return row ? mapProduct(row) : null;
   });
@@ -183,12 +184,12 @@ function cleanProductInput(input: ProductInput): ProductInput {
   if (!input.shape) throw new Error("Elige una forma");
   return {
     ...input,
-    name,
+    name: name,
     tagline: input.tagline.trim(),
     description: input.description.trim(),
     care: input.care.trim(),
-    price,
-    stock,
+    price: price,
+    stock: stock,
     notes: input.notes.map((n) => n.trim()).filter(Boolean),
     burnHours: input.burnHours.trim(),
     weight: input.weight.trim(),
@@ -197,7 +198,6 @@ function cleanProductInput(input: ProductInput): ProductInput {
   };
 }
 
-/** Admin: acceso controlado en el cliente con Firebase Auth */
 export const loadAdmin = createServerFn({ method: "GET" }).handler(async () => {
   const catalog = await fetchCatalog();
   const sql = await getSql();
@@ -246,7 +246,7 @@ export const loadAdmin = createServerFn({ method: "GET" }).handler(async () => {
       })),
     total: Number(row.total),
   }));
-  return { ...catalog, orders };
+  return { ...catalog, orders: orders };
 });
 
 export const saveProduct = createServerFn({ method: "POST" })
@@ -254,87 +254,10 @@ export const saveProduct = createServerFn({ method: "POST" })
   .handler(async ({ data }) => {
     const product = cleanProductInput(data);
     const sql = await getSql();
+    // SKU = id generado del nombre si es producto nuevo
     const id = product.id?.trim() || slugify(product.name);
     const notes = JSON.stringify(product.notes);
-    const availableColorIds = JSON.stringify(product.availableColorIds);
-    const existing = await sql.query<{ id: string; image: string }>(
-      "select id, image from products where id = $1",
-      [id],
-    );
-    const image = product.image || existing[0]?.image || "";
-    if (existing[0]) {
-      await sql.query(
-        `update products set
-          name=$2, tagline=$3, description=$4, care=$5, price=$6, stock=$7, shape=$8,
-          scent_id=$9, color_id=$10, notes=$11, burn_hours=$12, weight=$13,
-          featured=$14, is_new=$15, image=$16, available_color_ids=$17
-         where id=$1`,
-        [
-          id,
-          product.name,
-          product.tagline,
-          product.description,
-          product.care,
-          product.price,
-          product.stock,
-          product.shape,
-          product.scentId,
-          product.colorId,
-          notes,
-          product.burnHours,
-          product.weight,
-          product.featured,
-          product.isNew,
-          image,
-          availableColorIds,
-        ],
-      );
-    } else {
-      await sql.query(
-        `insert into products (
-          id, name, tagline, description, care, price, stock, shape, scent_id, color_id,
-          notes, burn_hours, weight, featured, is_new, image, available_color_ids
-        ) values ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17)`,
-        [
-          id,
-          product.name,
-          product.tagline,
-          product.description,
-          product.care,
-          product.price,
-          product.stock,
-          product.shape,
-          product.scentId,
-          product.colorId,
-          notes,
-          product.burnHours,
-          product.weight,
-          product.featured,
-          product.isNew,
-          image,
-          availableColorIds,
-        ],
-      );
-    }
-    return { id };
-  });
-
-export const deleteProduct = createServerFn({ method: "POST" })
-  .validator((id: string) => id)
-  .handler(async ({ data: id }) => {
-    const sql = await getSql();
-    await sql.query("delete from products where id = $1", [id]);
-  });
-
-export const saveScent = createServerFn({ method: "POST" })
-  .validator((input: { id?: string; name: string }) => input)
-  .handler(async ({ data }) => {
-    const name = data.name.trim();
-    if (name.length < 2) throw new Error("Escribe el nombre del aroma");
-    const sql = await getSql();
-    const id = data.id?.trim() || slugify(name);
-    await sql.query(
-      `insert into scents (id, name, sort_order) values ($1, $2, 50)
+    const availableColorIds = JSONert into scents (id, name, sort_order) values ($1, $2, 50)
        on conflict (id) do update set name = excluded.name`,
       [id, name],
     );
