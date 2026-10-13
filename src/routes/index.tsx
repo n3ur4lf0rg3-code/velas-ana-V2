@@ -14,8 +14,8 @@ export const Route = createFileRoute("/")({
 });
 
 const SHAPE_BLURBS: Record<string, string> = {
-  rosa: "Pétalos vertidos uno a uno, como una flor de jardín.",
-  frappe: "El café de la tarde, esculpido en cera y vainilla.",
+  rosa: "Tan hermosa como una flor de jardín.",
+  frappe: "El café de la tarde, esculpido en cera y espuma de cera.",
   "wax-melt": "Bombones de cera para el quemador, sin mecha.",
   decorativa: "Formas que se quedan en la mesa cuando se apagan.",
 };
@@ -37,7 +37,7 @@ function Home() {
           <Ornament className="mt-6 justify-start" />
           <p className="mt-6 max-w-md text-base leading-relaxed text-muted">
             Rosas esculpidas, frappés de vainilla, wax melts como chocolates.
-            Cada pieza de Velas Ana se vierte a mano, con aromas lentos y formas
+            Cada pieza de Velas Ana se crea a mano, con aromas lentos y formas
             que merecen la mesa.
           </p>
           <div className="mt-8 flex flex-wrap gap-3">
@@ -63,11 +63,11 @@ function Home() {
           {[
             {
               title: "Hecho a mano",
-              body: "Cada pétalo y cada vaso se vierte en el atelier, sin moldes industriales.",
+              body: "Cada vela de crea a mano con amor.",
             },
             {
               title: "Aroma verdadero",
-              body: "Notas botánicas y gourmand, pensadas para habitaciones reales, no para vitrinas.",
+              body: "Notas botánicas y gourmet, pensadas para habitaciones, no para vitrinas.",
             },
             {
               title: "Contra entrega",
