@@ -43,8 +43,7 @@ export function SiteFooter() {
         <div>
           <p className="text-xs tracking-[0.18em] uppercase text-gold">Pedido</p>
           <p className="mt-3 text-sm text-muted leading-relaxed">
-            Pagos por transferencia o depósito bancario. Enviamos a todo México
-            al confirmar el comprobante.
+            Pago contra entrega. Entrega en CDMX y área metropolitana.
           </p>
           <a
             href={`mailto:${STORE.email}`}
