@@ -110,6 +110,7 @@ async function fetchCatalog() {
 }
 
 function slugify(name: string) {
+function slugify(name: string) {
   const base = name
     .toLowerCase()
     .normalize("NFD")
@@ -118,7 +119,7 @@ function slugify(name: string) {
     .replace(/^-+|-+$/g, "")
     .slice(0, 40);
   const suffix = Math.random().toString(36).slice(2, 6);
-  return `\( {base || "pieza"}- \){suffix}`;
+  return (base || "pieza") + "-" + suffix;
 }
 
 function makeOrderId() {
@@ -127,8 +128,8 @@ function makeOrderId() {
   const mm = String(now.getMonth() + 1).padStart(2, "0");
   const yyyy = String(now.getFullYear());
   const rand = String(Math.floor(1000 + Math.random() * 9000));
-  const extra = Math.random().toString(36).slice(2, 4);
-  return `VA-\( {dd} \){mm}\( {yyyy}- \){rand}${extra}`;
+  const extra = Math.random().toString(36).slice(2, 6);
+  return "VA-" + dd + mm + yyyy + "-" + rand + extra;
 }
 
 export type CatalogPayload = {
