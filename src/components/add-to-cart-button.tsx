@@ -27,11 +27,13 @@ export function AddToCartButton({
       size={size}
       className={className}
       onClick={() => {
-        add(product.id, quantity, options);
+        add(product, quantity, options);
+        const label =
+          product.name + " · " + options.scentName + " · " + options.colorName;
         toast.success(
           soldOut
-            ? `${product.name} · pedido bajo pedido (2–3 días)`
-            : `${product.name} · ${options.scentName} · ${options.colorName} se agregó al carrito`,
+            ? product.name + " · bajo pedido (2–3 días)"
+            : label + " se agregó al carrito",
         );
       }}
     >
