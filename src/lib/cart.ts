@@ -92,7 +92,7 @@ export const useCart = create<CartState>()(
       clear: () => set({ items: [] }),
     }),
     {
-      name: "velas-ana-cart-v2",
+      name: "velas-ana-cart-v3",
       skipHydration: true,
       partialize: (state) => ({ items: state.items }),
       onRehydrateStorage: () => (state) => {
