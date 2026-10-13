@@ -36,8 +36,8 @@ function Home() {
           </h1>
           <Ornament className="mt-6 justify-start" />
           <p className="mt-6 max-w-md text-base leading-relaxed text-muted">
-            Rosas esculpidas, frappés de vainilla, wax melts como chocolates.
-            Cada pieza de Velas Ana se crea a mano, con aromas lentos y formas
+            Rosas, frappés, wax melts como chocolates, decorativas.
+            Cada pieza de Velas Ana se crea a mano, con aromas que perduran y formas
             que merecen la mesa.
           </p>
           <div className="mt-8 flex flex-wrap gap-3">
@@ -147,10 +147,9 @@ function Home() {
           <h2 className="font-display mt-2 text-headline">Un atelier pequeño, velas lentas</h2>
           <p className="mt-4 text-muted leading-relaxed">
             Velas Ana nace de la mesa de trabajo de Ana: cera de soya, mechas de
-            algodón y moldes que se tratan como flores. No hay dos rosas iguales.
-            Pedimos con calma y entregamos en CDMX y área metropolitana, con pago
-            contra entrega — así cada pedido se atiende como una pieza, no como
-            una fila.
+            algodón y aromas que enamoran.
+            Entregamos en CDMX y área metropolitana, con pago
+            contra entrega.
           </p>
           <Button asChild variant="outline" className="mt-8">
             <Link to="/nosotros">Conocer la casa</Link>
