@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { Ornament } from "@/components/ornament";
 import { Button } from "@/components/ui/button";
-import { BANK, STORE } from "@/lib/bank";
+import { STORE } from "@/lib/bank";
 
 export const Route = createFileRoute("/como-comprar")({ component: HowToBuy });
 
@@ -9,7 +9,7 @@ const STEPS = [
   {
     n: "01",
     title: "Elige tus velas",
-    body: "Recorre el catálogo. Filtra por forma —rosa, frappé, wax melt o decorativa— o por aroma. Abre cada pieza para ver notas, color y aroma.",
+    body: "Recorre el catálogo y filtra por forma —rosa, frappé, wax melt o decorativa—. En cada pieza eliges aroma y color.",
   },
   {
     n: "02",
@@ -19,27 +19,27 @@ const STEPS = [
   {
     n: "03",
     title: "Déjanos tus datos",
-    body: "Nombre, correo, teléfono, dirección y una nota si el pedido es de regalo. Con eso preparamos la caja y el envío.",
+    body: "Nombre, correo, teléfono y dirección en CDMX o área metropolitana. Una nota si el pedido es de regalo o tienes horario preferido.",
   },
   {
     n: "04",
     title: "Recibe tu número de orden",
-    body: "Al confirmar aparece un folio —por ejemplo VA-4821— junto con la CLABE. Guárdalo: es el concepto de tu transferencia.",
+    body: "Al confirmar aparece un folio como VA-01102026-5376. Guárdalo: es tu referencia para seguimiento.",
   },
   {
     n: "05",
-    title: "Paga",
-    body: "El pago es por transferencia SPEI, depósito bancario o pago en efectivo a contra entrega.",
+    title: "Pago contra entrega",
+    body: "Pagas en efectivo al recibir el pedido. No pedimos transferencia anticipada.",
   },
   {
     n: "06",
-    title: "Envía el comprobante",
-    body: `Mándalo a ${STORE.email} o por WhatsApp al ${STORE.whatsapp}, con tu número de orden. Si los productos se encuentran en stock, la entrega puede realizarse el mismo día. Si el producto está agotado de 2 a 3 días se entrega.`,
+    title: "Coordinamos la entrega",
+    body: `Te contactamos por WhatsApp (\( {STORE.whatsapp}) o correo ( \){STORE.email}) para acordar fecha, hora y punto de encuentro. Si hay stock, puede ser el mismo día; si está bajo pedido, de 2 a 3 días.`,
   },
-    {
+  {
     n: "07",
     title: "Entrega",
-    body: `La entrega se realizará en la CDMX y área metropolitana, previamente acordado la fecha, hora y lugar de encuentro.`,
+    body: STORE.deliveryNote,
   },
 ];
 
@@ -64,29 +64,41 @@ function HowToBuy() {
       </ol>
 
       <section className="mt-14 rounded-xl border border-border bg-raised p-6">
-        <h2 className="font-display text-title">Datos para transferir</h2>
+        <h2 className="font-display text-title">Contacto</h2>
         <dl className="mt-4 space-y-3 text-sm">
           <div className="flex justify-between gap-4">
-            <dt className="text-subtle">Banco</dt>
-            <dd>{BANK.name}</dd>
+            <dt className="text-subtle">Correo</dt>
+            <dd>
+              <a
+                href={`mailto:${STORE.email}`}
+                className="underline-offset-2 hover:underline"
+              >
+                {STORE.email}
+              </a>
+            </dd>
           </div>
           <div className="flex justify-between gap-4">
-            <dt className="text-subtle">Titular</dt>
-            <dd className="text-right">{BANK.holder}</dd>
+            <dt className="text-subtle">WhatsApp</dt>
+            <dd>
+              <a
+                href={`https://wa.me/${STORE.whatsappE164}`}
+                target="_blank"
+                rel="noreferrer"
+                className="underline-offset-2 hover:underline"
+              >
+                {STORE.whatsapp}
+              </a>
+            </dd>
           </div>
           <div className="flex justify-between gap-4">
-            <dt className="text-subtle">CLABE</dt>
-            <dd className="tabular-nums">{BANK.clabeDisplay}</dd>
+            <dt className="text-subtle">Zona</dt>
+            <dd className="text-right">{STORE.city}</dd>
           </div>
           <div className="flex justify-between gap-4">
-            <dt className="text-subtle">Cuenta</dt>
-            <dd className="tabular-nums">{BANK.accountDisplay}</dd>
+            <dt className="text-subtle">Pago</dt>
+            <dd>Contra entrega</dd>
           </div>
         </dl>
-        <p className="mt-4 text-sm text-muted">
-          El concepto es siempre tu número de orden. El monto, el total de la
-          confirmación.
-        </p>
       </section>
 
       <div className="mt-10">
