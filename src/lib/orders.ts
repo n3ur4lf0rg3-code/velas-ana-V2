@@ -53,20 +53,18 @@ export function getOrder(id: string) {
 }
 
 export function saveOrder(order: Order) {
-  // Guardar también en localStorage (respaldo inmediato para la página de confirmación)
   const all = listOrders().filter((existing) => existing.id !== order.id);
   all.unshift(order);
   if (typeof window !== "undefined") {
     window.localStorage.setItem(KEY, JSON.stringify(all));
   }
 
-  // Guardar en Firestore (persistente)
   void createOrderInFirestore({
     code: order.id,
     customer: order.customer,
     lines: order.lines,
     total: order.total,
-    status: "pending_transfer",
+    status: "pending_cod",
   }).catch((err) => {
     console.error("Error guardando orden en Firestore:", err);
   });
