@@ -86,9 +86,14 @@ function OrderPage() {
           </li>
         </ul>
         <Button asChild size="lg" className="mt-6 w-full">
-          <a href={orderWhatsAppUrl(order)} target="_blank" rel="noreferrer">
-            Enviar pedido por WhatsApp
-          </a>
+          <a
+  href={orderWhatsAppUrl(order)}
+  target="_blank"
+  rel="noopener noreferrer"
+  className="mt-6 inline-flex h-12 w-full items-center justify-center rounded-md bg-primary px-6 text-sm font-medium text-primary-fg"
+>
+  Enviar pedido por WhatsApp
+</a>
         </Button>
         <p className="mt-2 text-center text-xs text-subtle">
           Ábrelo para que nos llegue el detalle del pedido {order.id}.
@@ -116,7 +121,10 @@ function OrderPage() {
         <h2 className="font-display text-title">Tu pedido</h2>
         <ul className="mt-4 divide-y divide-border">
           {order.lines.map((line) => (
-            <li key={`\( {line.productId}- \){line.name}`} className="flex items-center gap-3 py-3">
+            <li
+  key={`\( {line.productId}- \){line.name}`}
+  className="flex items-center gap-3 py-3"
+>
               <img
                 src={line.image}
                 alt=""
