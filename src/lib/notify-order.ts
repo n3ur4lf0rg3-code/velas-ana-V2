@@ -34,7 +34,7 @@ export function buildOrderWhatsAppText(order: Order) {
 
 export function orderWhatsAppUrl(order: Order) {
   const text = encodeURIComponent(buildOrderWhatsAppText(order));
-  return `https://wa.me/\( {STORE.whatsappE164}?text= \){text}`;
+  return "https://wa.me/" + STORE.whatsappE164 + "?text=" + text;
 }
 
 /** Correo al dueño vía FormSubmit (gratis). Primera vez confirma el mail. */
